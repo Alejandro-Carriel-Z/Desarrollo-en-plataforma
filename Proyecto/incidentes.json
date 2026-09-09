@@ -1,0 +1,26 @@
+[
+  {
+    "id": "INC-001",
+    "titulo": "Intento de acceso phishing masivo",
+    "severidad": "alta",
+    "fecha": "2026-09-03",
+    "estado": "En investigación",
+    "tipo": "Phishing"
+  },
+  {
+    "id": "INC-002",
+    "titulo": "Acceso no autorizado a servidor",
+    "severidad": "critica",
+    "fecha": "2026-09-02",
+    "estado": "Contención en curso",
+    "tipo": "Acceso no autorizado"
+  },
+  {
+    "id": "INC-003",
+    "titulo": "Vulnerabilidad detectada en aplicación interna",
+    "severidad": "media",
+    "fecha": "2026-09-01",
+    "estado": "Resuelto",
+    "tipo": "Vulnerabilidad"
+  }
+]
