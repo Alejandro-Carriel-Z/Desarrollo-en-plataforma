@@ -2,17 +2,24 @@ const etiquetasSeveridad = { critica: 'Crítica', alta: 'Alta', media: 'Media', 
 
 function escapar(texto) {
     const elemento = document.createElement('span');
-    elemento.textContent = texto;
+    elemento.textContent = String(texto ?? '');
     return elemento.innerHTML;
 }
+
+const etiquetasTipo = {
+    phishing: 'Phishing',
+    malware: 'Malware',
+    acceso: 'Acceso no autorizado',
+    vulnerabilidad: 'Vulnerabilidad'
+};
 
 export function renderizarIncidentes(incidentes, contenedor) {
     contenedor.innerHTML = incidentes.map((incidente, indice) => `
         <article class="incident-card severity-${escapar(incidente.severidad)}" style="animation-delay: ${indice * 80}ms">
             <div class="card-top"><span>${escapar(incidente.id)}</span><span class="badge">${etiquetasSeveridad[incidente.severidad] || 'Pendiente'}</span></div>
             <h3>${escapar(incidente.titulo)}</h3>
-            <p>${escapar(incidente.tipo)} · ${escapar(incidente.estado)}</p>
-            <div class="card-footer"><span>${escapar(incidente.fecha)}</span><a href="detalle.html">Ver detalle ↗</a></div>
+            <p>${escapar(etiquetasTipo[incidente.tipo] || incidente.tipo)} · ${escapar(incidente.estado)}</p>
+            <div class="card-footer"><span>${escapar(incidente.fecha)}</span><a href="detalle.html?id=${encodeURIComponent(incidente.id)}">Ver detalle ↗</a></div>
         </article>
     `).join('');
 }

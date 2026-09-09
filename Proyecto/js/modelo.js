@@ -1,4 +1,4 @@
-const FUENTE_INCIDENTES = '../incidentes.json';
+const FUENTE_INCIDENTES = './incidentes.json';
 
 export async function obtenerIncidentes() {
     const respuesta = await fetch(FUENTE_INCIDENTES);
@@ -9,10 +9,12 @@ export async function obtenerIncidentes() {
 }
 
 export function crearIncidente(datos) {
+    const sufijoTiempo = Date.now().toString().slice(-6);
+    const sufijoAleatorio = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
     return {
-        id: `INC-${String(Date.now()).slice(-3)}`,
-        titulo: datos.titulo,
-        descripcion: datos.descripcion,
+        id: `INC-${sufijoTiempo}-${sufijoAleatorio}`,
+        titulo: datos.titulo.trim(),
+        descripcion: datos.descripcion.trim(),
         severidad: datos.severidad,
         fecha: datos.fecha,
         estado: 'En investigación',

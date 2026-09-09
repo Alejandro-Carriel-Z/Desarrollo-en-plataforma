@@ -7,19 +7,24 @@ let incidentes = [];
 
 function validarFormulario(datos) {
     const errores = {};
-    if (datos.titulo.trim().length < 5) errores.titulo = 'Escribe un título de al menos 5 caracteres.';
-    if (datos.descripcion.trim().length < 20) errores.descripcion = 'La descripción debe tener al menos 20 caracteres.';
+    const titulo = datos.titulo.trim();
+    const descripcion = datos.descripcion.trim();
+    if (titulo.length < 5) errores.titulo = 'Escribe un título de al menos 5 caracteres.';
+    else if (titulo.length > 100) errores.titulo = 'El título no puede superar los 100 caracteres.';
+    if (descripcion.length < 20) errores.descripcion = 'La descripción debe tener al menos 20 caracteres.';
+    else if (descripcion.length > 500) errores.descripcion = 'La descripción no puede superar los 500 caracteres.';
     if (!datos.severidad) errores.severidad = 'Selecciona una severidad.';
     if (!datos.tipo) errores.tipo = 'Selecciona un tipo de incidente.';
     if (!datos.fecha) errores.fecha = 'Selecciona la fecha del incidente.';
-    if (!/^\S+@\S+\.\S+$/.test(datos.correo)) errores.correo = 'Introduce un correo válido.';
+    else if (datos.fecha > new Date().toISOString().slice(0, 10)) errores.fecha = 'La fecha no puede ser futura.';
+    if (!/^\S+@\S+\.\S+$/.test(datos.correo.trim())) errores.correo = 'Introduce un correo válido.';
     if (!datos.confirmacion) errores.confirmacion = 'Debes confirmar la información.';
     return errores;
 }
 
 function leerFormulario() {
     const datos = Object.fromEntries(new FormData(formulario).entries());
-    datos.confirmacion = formulario.confirmacion.checked;
+    datos.confirmacion = formulario.querySelector('#confirmacion').checked;
     return datos;
 }
 
@@ -36,7 +41,9 @@ async function iniciar() {
     }
 }
 
-formulario.addEventListener('input', () => mostrarErrores({}));
+const CAMPOS_FORMULARIO = ['titulo', 'descripcion', 'severidad', 'tipo', 'fecha', 'correo', 'confirmacion'];
+
+formulario.addEventListener('input', () => mostrarErrores(Object.fromEntries(CAMPOS_FORMULARIO.map((campo) => [campo, '']))));
 formulario.addEventListener('submit', (evento) => {
     evento.preventDefault();
     const datos = leerFormulario();
