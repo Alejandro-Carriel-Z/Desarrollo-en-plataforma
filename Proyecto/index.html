@@ -1,0 +1,157 @@
+<!-- Autor Alejando carriel -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de incidentes de ciberseguridad</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <header>
+        <div class="contenedor-header">
+            <h1>Gestión de incidentes de ciberseguridad</h1>
+            <p>Plataforma para el registro y gestión de incidentes de ciberseguridad</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="#registro-incidente">Registrar incidente</a></li>
+            <li><a href="#listado-incidentes">Listado de incidentes</a></li>
+            <li><a href="detalle.html">Detalle de incidente</a></li>
+        </ul>
+    </nav>
+
+    <main>
+
+        <!-- Sección de listado de incidentes -->
+        <section id="listado-incidentes">
+            <H2> Listado de incidentes recientes</H2>
+            <div class="lista-incidente">
+
+                <!-- PRIMER INCIDENTE-->
+                <article class="tarjeta-incidente severidad-alta">
+                    <h3>INC-001: Intento de acceso phishing masivo</h3>
+                    <p><strong>Severidad:</strong> Alta</p>
+                    <p><strong>Fecha:</strong> 2026-09-03</p>
+                    <p><strong>Estado:</strong> En investigación</p>
+                    <a href="detalle.html">Ver detalles</a>
+                </article>
+
+                <!-- SEGUNDO INCIDENTE-->
+                <article class="tarjeta-incidente severidad-media">
+                    <h3>INC-002: Malware detectado en servidor</h3>
+                    <p><strong>Severidad:</strong> Media</p>
+                    <p><strong>Fecha:</strong> 2026-09-02</p>
+                    <p><strong>Estado:</strong> Contenido</p>
+                    <a href="detalle.html">Ver detalles</a>
+                </article>
+
+                <!-- TERCER INCIDENTE-->
+                <article class="tarjeta-incidente severidad-baja">
+                    <h3>INC-003: Intento de acceso no autorizado</h3>
+                    <p><strong>Severidad:</strong> Baja</p>
+                    <p><strong>Fecha:</strong> 2026-09-01</p>
+                    <p><strong>Estado:</strong> Resuelto</p>
+                    <a href="detalle.html">Ver detalles</a>
+                </article>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: Formulario de registro-->
+        <section id="registro-incidente">
+            <h2>Registrar nuevo incidente</h2>
+            <form  action="#" method="post" novalidate>
+
+                <div class="campo">
+                    <label for="titulo">Título del incidente <span class="obligatorio">*</span></label>
+                    <input type="text" id="titulo" name="titulo" required minlength="5" maxlength="100" placeholder="Ingrese un título descriptivo del incidente">
+                    <span class="ayuda">El título debe tener entre 5 y 100 caracteres</span> 
+                </div>
+
+
+                <div class="Campo">
+                    <label for="descripcion">Descripcion detallada <span class="obligatorio">*</span></label>
+                    <textarea id="descripcion" name="descripcion" rows="5" required minlength="20" placeholder="Ingrese una descripción detallada del incidente"></textarea>
+                    <span class="ayuda">incluye los detalles relevantes del incidente</span>
+                </div>
+
+
+                <div class="Campo">
+                    <label for="severidad">Severidad <span class="obligatorio">*</span></label>
+                    <select id="severidad" name="severidad" required>
+                        <option value="">Seleccione la severidad</option>
+                        <option value="alta">Alta</option>
+                        <option value="media">Media</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+
+                <div class="Campo">
+                    <label for="tipo">Tipo de incidente <span class="obligatorio">*</span></label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="">Seleccione el tipo de incidente</option>
+                        <option value="ataque">Ataque cibernético</option>
+                        <option value="vulnerabilidad">Vulnerabilidad</option>
+                        <option value="error">Error de sistema</option>
+                    </select>
+                </div>
+
+                <div class="Campo">
+                    <label for="fecha">Fecha del incidente <span class="obligatorio">*</span></label>
+                    <input type="date" id="fecha" name="fecha" required>
+                </div>
+
+                <div class="campo">
+                    <label for="correo">Correo del reportante <span class="obligatorio">*</span></label>
+                    <input type="email" id="correo" name="correo" required placeholder="ejemplo@dominio.com">
+                    <span class="ayuda">Te enviaremos actualizaciones del incidente a este correo.</span>
+                </div>
+
+                <div class="campo checkbox">
+                    <input type="checkbox" id="confirmacion" name="confirmacion" required>
+                    <label for="confirmacion">Confirmo que la información proporcionada es correcta <span class="obligatorio">*</span></label>
+                </div>
+
+                <button type="submit">Registrar incidente</button>
+            </form>
+        </section>
+
+
+        <aside>
+            <h2>Panel de información</h2>
+            <div class="info-aside">
+                <h3>Resumen rápido</h3>
+                <ul>
+                    <li>Total de incidentes registrados: 3</li>
+                    <li>Incidentes abiertos: 2</li>
+                    <li>Incidentes resueltos este mes: 12</li>
+                </ul>
+                <h3>Consejos de seguridad</h3>
+                <p>Nunca abras enlaces sospechosos en correos. Verifica siempre el remitente.</p>
+            </div>
+        </aside>
+
+        <section class="vista-rapida">
+            <h2>Vista rápida</h2>
+            <p>Total de incidentes registrados: 3</p>
+            <p>Incidentes abiertos: 2</p>
+            <p>Incidentes resueltos este mes: 12</p>
+
+            <a href="#registro-incidente">Registrar incidente</a>
+            <a href="#listado-incidentes">Listado de incidentes</a>
+            <a href="detalle.html">Ver detalle de incidente</a>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 SecureGuard - plataforma de gestión de incidentes de ciberseguridad</p>
+        <p>Proyecto académico - unidad 1 | Desarrollo de plataformas</p>    
+        <p>Autor: Alejandro Carriel</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de incidente - SecureGuard</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="contenedor-header">
+            <h1>SecureGuard - Gestión de incidentes de ciberseguridad</h1>
+            <p>Plataforma para el registro y gestión de incidentes de ciberseguridad</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="index.html#registro-incidente">Registrar incidente</a></li>
+            <li><a href="index.html#listado-incidentes">Listado de incidentes</a></li>
+            <li><a href="detalle.html">Detalle de incidente</a></li>
+        </ul>
+    </nav>
+
+    <main class="detalle-main">
+        <section class="detalle-incidente">
+            <h2>Detalle del incidente INC-002</h2>
+
+            <article>
+                <header class="cabecera-detalle">
+                    <h3>Acceso no autorizado a servidor</h3>
+                    <span class="badge severidad-critica">Severidad: Crítica</span>
+                </header>
+
+                <div class="info-detalle">
+                    <p><strong>ID del incidente:</strong> INC-002</p>
+                    <p><strong>Fecha de registro:</strong> 01/09/2026 - 14:37</p>
+                    <p><strong>Estado:</strong> Contención en curso</p>
+                    <p><strong>Tipo:</strong> Acceso no autorizado</p>
+                    <p><strong>Reportado por:</strong> ana.martinez@empresa.com</p>
+                </div>
+
+                <div class="descripcion-detalle">
+                    <h4>Descripción del incidente:</h4>
+                    <p>Se detectó un intento de acceso no autorizado al servidor de producción 
+            (IP: 192.168.10.25) desde una dirección IP externa (203.0.113.45). 
+            El atacante intentó autenticarse mediante fuerza bruta durante 
+            aproximadamente 18 minutos. Se activaron las reglas de bloqueo 
+            automático y se isoló temporalmente el servidor afectado.
+                    </p>
+                    <p> Actualización: Incidente en proceso de resolución.</p>
+                </div>
+
+                <div class="acciones">
+                    <h4>Acciones tomadas:</h4>
+                    <ul>
+                        <li>Se bloqueó la dirección IP externa sospechosa.</li>
+                        <li>Se revisaron los registros de acceso y se identificaron intentos fallidos.</li>
+                        <li>Se notificó al equipo de seguridad para una investigación más profunda.</li>
+                        <li>Se implementaron medidas adicionales de seguridad en el servidor afectado.</li>
+                    </ul>
+                </div>
+
+                <div class="botones-detalle">
+                    <a href="index.html" class="boton">← Volver al listado</a>
+                </div>
+            </article>
+        </section>
+
+        <aside>
+            <h2>Panel de información</h2>
+            <div class="info-aside">
+                <h3>Estado del incidente</h3>
+                <ul>
+                    <li>Prioridad: Máxima</li>
+                    <li>Tiempo transcurrido: 2 dias</li>
+                    <li>Responsable: Equipo SOC</li>
+                </ul>
+                <h3>Próximos pasos</h3>
+                <p>Completar el análisis forense y emitir informe final.</p>
+            </div>
+        </aside>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 SecureGuard. Todos los derechos reservados.</p>
+        <p> Proyecto academico - unidad 1 | Desarrollo de plataformas</p>
+        <p>Autor: Alejandro Carriel</p>
+    </footer>
+
+</body>
+</html>
