@@ -1,37 +1,22 @@
-# Desarrollo de Plataformas · PUCE
+﻿# Desarrollo de Plataformas — PUCE
 
 **Estudiante:** Alejandro Carriel  
-**Institución:** Pontificia Universidad Católica del Ecuador (PUCE)  
-**Asignatura:** Desarrollo de Plataformas  
-**Semestre:** 5.º  
+**Universidad:** Pontificia Universidad Católica del Ecuador (PUCE)  
+**Semestre:** 5.º · Ciberseguridad  
 
----
-
-## Sobre este repositorio
-
-Portafolio académico del curso **Desarrollo de Plataformas**. El material se organiza por semanas para documentar prácticas, laboratorios y entregables a lo largo del semestre.
+Portafolio académico de la materia **Desarrollo de Plataformas**. El trabajo se organiza por semanas.
 
 ## Estructura
 
 | Carpeta | Contenido |
 |---------|-----------|
-| [`SEMANA 1/`](SEMANA%201/) | Proyecto de incidentes de ciberseguridad (Unidad I): prototipo web con HTML, CSS y JavaScript (MVC) |
-| `SEMANA 2/` … | Semanas futuras (se irán agregando) |
+| [`SEMANA 1 Y 2/`](./SEMANA%201%20Y%202/) | Proyecto web de gestión de incidentes (HTML/CSS/JS), informes y mejoras Unidad I |
+| `SEMANA 3/` | Próximamente |
 
-### SEMANA 1 — Proyecto de incidentes
+## Cómo revisar Semana 1 y 2
 
-Aplicación web para consultar y visualizar incidentes de ciberseguridad:
+Abre `SEMANA 1 Y 2/index.html` en el navegador (o sirve la carpeta con un servidor local estático).
 
-- `index.html` / `detalle.html` — interfaz
-- `css/` — estilos
-- `js/` — modelo, vista y controlador
-- `incidentes.json` — datos de ejemplo
-- Documentación de revisión y mejoras de la Unidad I
+## Contacto
 
-## Cómo explorar
-
-Abre `SEMANA 1/index.html` en el navegador (o sirve la carpeta con un servidor estático local) para ver el prototipo.
-
-## Nota
-
-Este repositorio es material académico. Comentarios y sugerencias vía Issues o Pull Requests son bienvenidos.
+GitHub: [socotroco811](https://github.com/socotroco811)
