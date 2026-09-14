@@ -1,15 +1,37 @@
-🚀 Desarrollo de Plataformas - PUCE
+# Desarrollo de Plataformas · PUCE
 
-¡Bienvenido/a a mi repositorio de aprendizaje! 
-Este es un espacio dedicado a la materia de Desarrollo de Plataformas, correspondiente al 5to semestre de mi carrera en la Pontificia Universidad Católica del Ecuador (PUCE).📌 
+**Estudiante:** Alejandro Carriel  
+**Institución:** Pontificia Universidad Católica del Ecuador (PUCE)  
+**Asignatura:** Desarrollo de Plataformas  
+**Semestre:** 5.º  
 
-Sobre este repositorioEl objetivo principal de este proyecto es documentar mi camino de aprendizaje, almacenar las prácticas de clase y registrar la evolución de mis habilidades en el desarrollo de software.
-Aquí encontrarás:Avances semanales y laboratorios prácticos.Proyectos y entregables de la materia.Código fuente estructurado según los requerimientos académicos.🤝
+---
 
+## Sobre este repositorio
 
-¡Tu ayuda es bienvenida!
+Portafolio académico del curso **Desarrollo de Plataformas**. El material se organiza por semanas para documentar prácticas, laboratorios y entregables a lo largo del semestre.
 
-Este repositorio no es solo un archivo estático, sino un espacio abierto a la retroalimentación. 
+## Estructura
 
-Si eres compañero/a, docente o un desarrollador con más experiencia:Te invito a visualizar mis avances y revisar el código.Si encuentras errores, bugs o áreas de mejora en la arquitectura, puedes ayudarme a corregir abriendo un Issue o enviando un Pull Request.
-¡Cualquier sugerencia para mejorar es enormemente valorada!
+| Carpeta | Contenido |
+|---------|-----------|
+| [`SEMANA 1/`](SEMANA%201/) | Proyecto de incidentes de ciberseguridad (Unidad I): prototipo web con HTML, CSS y JavaScript (MVC) |
+| `SEMANA 2/` … | Semanas futuras (se irán agregando) |
+
+### SEMANA 1 — Proyecto de incidentes
+
+Aplicación web para consultar y visualizar incidentes de ciberseguridad:
+
+- `index.html` / `detalle.html` — interfaz
+- `css/` — estilos
+- `js/` — modelo, vista y controlador
+- `incidentes.json` — datos de ejemplo
+- Documentación de revisión y mejoras de la Unidad I
+
+## Cómo explorar
+
+Abre `SEMANA 1/index.html` en el navegador (o sirve la carpeta con un servidor estático local) para ver el prototipo.
+
+## Nota
+
+Este repositorio es material académico. Comentarios y sugerencias vía Issues o Pull Requests son bienvenidos.
