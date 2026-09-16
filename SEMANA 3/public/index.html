@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panel académico SecureGuard — gestión de incidentes con API Node.js.">
+    <title>SecureGuard | Centro de incidentes — Semana 3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-media" role="img" aria-label="Analista revisando un panel de seguridad informática"></div>
+        <div class="hero-content">
+            <p class="eyebrow">SECUREGUARD / UNIDAD 3</p>
+            <h1>Centro de respuesta a incidentes</h1>
+            <p class="hero-copy">Plataforma digital con servidor Node.js, API HTTP y arquitectura por capas para registrar y seguir eventos de seguridad.</p>
+            <a class="button button-primary" href="#registro-incidente">Registrar un incidente <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="hero-status" aria-label="Estado del centro"><span class="status-dot"></span>API en línea</div>
+    </header>
+
+    <nav class="site-nav" aria-label="Navegación principal">
+        <a class="brand" href="/"><span class="brand-mark">S</span> SecureGuard</a>
+        <ul>
+            <li><a href="#listado-incidentes">Incidentes</a></li>
+            <li><a href="#registro-incidente">Registrar</a></li>
+            <li><a href="/api/incidentes" target="_blank" rel="noopener">API JSON</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="metrics" aria-label="Resumen operativo">
+            <article class="metric-card metric-highlight"><span class="metric-label">Incidentes registrados</span><strong id="total-incidentes">0</strong><small>Persistidos en el servidor</small></article>
+            <article class="metric-card"><span class="metric-label">Casos abiertos</span><strong id="incidentes-abiertos">0</strong><small>Requieren seguimiento</small></article>
+            <article class="metric-card"><span class="metric-label">Arquitectura</span><strong>n-capas</strong><small>Dominio → App → Infra</small></article>
+            <article class="metric-card"><span class="metric-label">Transporte</span><strong>HTTP</strong><small>Node.js nativo</small></article>
+        </section>
+
+        <div id="mensaje-estado" class="sr-only" role="status" aria-live="polite"></div>
+
+        <section id="listado-incidentes" class="content-section">
+            <div class="section-heading">
+                <div><p class="eyebrow">MONITOREO</p><h2>Incidentes recientes</h2></div>
+                <span id="estado-carga" class="load-state">Cargando datos...</span>
+            </div>
+            <div id="lista-incidentes" class="incident-grid" aria-live="polite"></div>
+        </section>
+
+        <div class="workspace-grid">
+            <section id="registro-incidente" class="content-section form-section">
+                <div class="section-heading">
+                    <div><p class="eyebrow">NUEVO REPORTE</p><h2>Registrar incidente</h2></div>
+                    <span class="required-note">* Campos obligatorios · POST /api/incidentes</span>
+                </div>
+                <form id="formulario-incidente" novalidate>
+                    <div class="form-grid">
+                        <div class="campo campo-wide">
+                            <label for="titulo">Título del incidente <span aria-hidden="true">*</span></label>
+                            <input type="text" id="titulo" name="titulo" required minlength="5" maxlength="100" placeholder="Ej. Alerta de acceso irregular">
+                            <small class="field-message" id="titulo-error"></small>
+                        </div>
+                        <div class="campo campo-wide">
+                            <label for="descripcion">Descripción detallada <span aria-hidden="true">*</span></label>
+                            <textarea id="descripcion" name="descripcion" rows="4" required minlength="20" maxlength="500" placeholder="Describe qué ocurrió, cuándo y qué sistemas están involucrados"></textarea>
+                            <small class="field-message" id="descripcion-error"></small>
+                        </div>
+                        <div class="campo">
+                            <label for="severidad">Severidad <span aria-hidden="true">*</span></label>
+                            <select id="severidad" name="severidad" required>
+                                <option value="">Seleccionar</option>
+                                <option value="critica">Crítica</option>
+                                <option value="alta">Alta</option>
+                                <option value="media">Media</option>
+                                <option value="baja">Baja</option>
+                            </select>
+                            <small class="field-message" id="severidad-error"></small>
+                        </div>
+                        <div class="campo">
+                            <label for="tipo">Tipo de incidente <span aria-hidden="true">*</span></label>
+                            <select id="tipo" name="tipo" required>
+                                <option value="">Seleccionar</option>
+                                <option value="phishing">Phishing</option>
+                                <option value="malware">Malware</option>
+                                <option value="acceso">Acceso no autorizado</option>
+                                <option value="vulnerabilidad">Vulnerabilidad</option>
+                            </select>
+                            <small class="field-message" id="tipo-error"></small>
+                        </div>
+                        <div class="campo">
+                            <label for="fecha">Fecha del incidente <span aria-hidden="true">*</span></label>
+                            <input type="date" id="fecha" name="fecha" required>
+                            <small class="field-message" id="fecha-error"></small>
+                        </div>
+                        <div class="campo">
+                            <label for="correo">Correo del reportante <span aria-hidden="true">*</span></label>
+                            <input type="email" id="correo" name="correo" required placeholder="nombre@empresa.com">
+                            <small class="field-message" id="correo-error"></small>
+                        </div>
+                    </div>
+                    <label class="checkbox">
+                        <input type="checkbox" id="confirmacion" name="confirmacion" required>
+                        <span>Confirmo que la información proporcionada es correcta.</span>
+                    </label>
+                    <small class="field-message" id="confirmacion-error"></small>
+                    <button class="button button-primary" type="submit">Crear reporte <span aria-hidden="true">+</span></button>
+                </form>
+            </section>
+
+            <aside class="insight-panel">
+                <p class="eyebrow">UNIDAD 3</p>
+                <h2>Del cliente estático al servidor HTTP.</h2>
+                <p>Los datos ahora viven en el servidor (persistencia JSON) y se consumen por API. La UI solo presenta; la lógica de negocio queda en capas separadas.</p>
+                <div class="tip-list">
+                    <div><span>01</span><p><strong>Dominio</strong><br>reglas del incidente.</p></div>
+                    <div><span>02</span><p><strong>Aplicación</strong><br>casos de uso.</p></div>
+                    <div><span>03</span><p><strong>Infraestructura</strong><br>HTTP y archivos.</p></div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer>
+        <p><strong>SecureGuard</strong> · Desarrollo de plataformas · PUCE · Semana 3</p>
+        <p>© 2026 Alejandro Carriel</p>
+    </footer>
+    <script type="module" src="/js/app.js"></script>
+</body>
+</html>
