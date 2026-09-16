@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Detalle de incidente SecureGuard.">
+    <title>SecureGuard | Detalle de incidente</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+    <nav class="site-nav" aria-label="Navegación principal">
+        <a class="brand" href="/"><span class="brand-mark">S</span> SecureGuard</a>
+        <ul>
+            <li><a href="/#listado-incidentes">Incidentes</a></li>
+            <li><a href="/#registro-incidente">Registrar</a></li>
+            <li><a href="/detalle.html" aria-current="page">Detalle</a></li>
+        </ul>
+    </nav>
+    <main class="detail-layout">
+        <section class="content-section detail-card" id="detalle-contenido">
+            <a class="back-link" href="/">← Volver al centro</a>
+            <p class="load-state" id="detalle-estado">Cargando incidente...</p>
+        </section>
+        <aside class="insight-panel">
+            <p class="eyebrow">API</p>
+            <h2>GET /api/incidentes/:id</h2>
+            <p>El detalle se obtiene del servidor. Si el identificador no existe, la API responde 404.</p>
+        </aside>
+    </main>
+    <footer>
+        <p><strong>SecureGuard</strong> · Desarrollo de plataformas · PUCE · Semana 3</p>
+        <p>© 2026 Alejandro Carriel</p>
+    </footer>
+    <script type="module" src="/js/detalle.js"></script>
+</body>
+</html>
