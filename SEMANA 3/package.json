@@ -1,23 +1,8 @@
 {
-  "name": "secureguard-semana3",
-  "version": "1.0.0",
-  "private": true,
-  "description": "SecureGuard — SEMANA 3: plataforma de incidentes con Node.js y arquitectura por capas (PUCE)",
-  "main": "server.js",
-  "engines": {
-    "node": ">=18"
-  },
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
-  "keywords": [
-    "puce",
-    "desarrollo-de-plataformas",
-    "node",
-    "http",
-    "n-capas"
-  ],
-  "author": "Alejandro Carriel",
-  "license": "UNLICENSED"
+    "name": "secureguard-semana3",
+    "private": true,
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    }
 }

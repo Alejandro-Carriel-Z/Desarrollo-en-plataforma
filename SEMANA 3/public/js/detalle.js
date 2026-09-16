@@ -1,55 +1,43 @@
-import { obtenerIncidente } from "./api.js";
-import { etiquetasSeveridad, escapar } from "./vista.js";
+import { obtenerIncidente } from "./modelo.js";
 
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
-const contenedor = document.querySelector("#detalle-contenido");
+const etiquetasSeveridad = {
+    critica: "Crítica",
+    alta: "Alta",
+    media: "Media",
+    baja: "Baja"
+};
 
-async function renderizar() {
-  if (!id) {
-    contenedor.innerHTML = `
-      <a class="back-link" href="/">← Volver al centro</a>
-      <p class="load-state">Indica un identificador en la URL, por ejemplo <code>detalle.html?id=INC-002</code>.</p>`;
-    return;
-  }
+const parametros = new URLSearchParams(window.location.search);
+const id = parametros.get("id") || "INC-002";
 
-  try {
-    const incidente = await obtenerIncidente(id);
-    if (!incidente) {
-      contenedor.innerHTML = `
-        <a class="back-link" href="/">← Volver al centro</a>
-        <p class="load-state">No se encontró el incidente <strong>${escapar(id)}</strong>.</p>`;
-      return;
-    }
-
-    document.title = `SecureGuard | ${incidente.id}`;
-    const severidad = etiquetasSeveridad[incidente.severidad] || incidente.severidad;
-    contenedor.innerHTML = `
-      <a class="back-link" href="/">← Volver al centro</a>
-      <div class="section-heading detail-heading">
-        <div>
-          <p class="eyebrow">CASO / ${escapar(incidente.id)}</p>
-          <h1>${escapar(incidente.titulo)}</h1>
-        </div>
-        <span class="badge">${escapar(severidad)}</span>
-      </div>
-      <div class="detail-meta">
-        <div><span>ID del incidente</span><strong>${escapar(incidente.id)}</strong></div>
-        <div><span>Fecha</span><strong>${escapar(incidente.fecha)}</strong></div>
-        <div><span>Estado</span><strong>${escapar(incidente.estado)}</strong></div>
-        <div><span>Reportante</span><strong>${escapar(incidente.reportante || "—")}</strong></div>
-      </div>
-      <div class="detail-copy">
-        <h2>Descripción</h2>
-        <p>${escapar(incidente.descripcion || "Sin descripción.")}</p>
-        <h2>Clasificación</h2>
-        <p><strong>Tipo:</strong> ${escapar(incidente.tipo)} · <strong>Severidad:</strong> ${escapar(severidad)}</p>
-      </div>`;
-  } catch (error) {
-    contenedor.innerHTML = `
-      <a class="back-link" href="/">← Volver al centro</a>
-      <p class="load-state">${escapar(error.message)}</p>`;
-  }
+function mostrarTexto(selector, valor, predeterminado = "No disponible") {
+    document.querySelector(selector).textContent = valor || predeterminado;
 }
 
-renderizar();
+async function cargarDetalle() {
+    try {
+        const incidente = await obtenerIncidente(id);
+
+        if (!incidente) {
+            mostrarTexto("#detalle-titulo", "Incidente no encontrado");
+            mostrarTexto("#detalle-descripcion", `No existe un incidente con el identificador ${id}.`);
+            return;
+        }
+
+        document.title = `SecureGuard | Detalle ${incidente.id}`;
+        mostrarTexto("#detalle-etiqueta", `INCIDENTE / ${incidente.id}`);
+        mostrarTexto("#detalle-titulo", incidente.titulo);
+        mostrarTexto("#detalle-severidad", etiquetasSeveridad[incidente.severidad] || incidente.severidad);
+        mostrarTexto("#detalle-id", incidente.id);
+        mostrarTexto("#detalle-fecha", incidente.fecha);
+        mostrarTexto("#detalle-estado", incidente.estado);
+        mostrarTexto("#detalle-reportante", incidente.reportante);
+        mostrarTexto("#detalle-descripcion", incidente.descripcion);
+        mostrarTexto("#detalle-tipo", incidente.tipo);
+    } catch (_error) {
+        mostrarTexto("#detalle-titulo", "No se pudo cargar el incidente");
+        mostrarTexto("#detalle-descripcion", "Verifica que el servidor esté ejecutándose en localhost:3000.");
+    }
+}
+
+cargarDetalle();

@@ -3,37 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Detalle de incidente SecureGuard.">
-    <title>SecureGuard | Detalle de incidente</title>
+    <meta name="description" content="Detalle de un incidente de SecureGuard.">
+    <title>SecureGuard | Detalle del incidente</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/estilos.css">
+    <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-    <nav class="site-nav" aria-label="Navegación principal">
-        <a class="brand" href="/"><span class="brand-mark">S</span> SecureGuard</a>
-        <ul>
-            <li><a href="/#listado-incidentes">Incidentes</a></li>
-            <li><a href="/#registro-incidente">Registrar</a></li>
-            <li><a href="/detalle.html" aria-current="page">Detalle</a></li>
-        </ul>
-    </nav>
+    <nav class="site-nav" aria-label="Navegación principal"><a class="brand" href="index.html"><span class="brand-mark">S</span> SecureGuard</a><ul><li><a href="index.html#listado-incidentes">Incidentes</a></li><li><a href="index.html#registro-incidente">Registrar</a></li><li><a href="detalle.html" aria-current="page">Caso destacado</a></li></ul></nav>
     <main class="detail-layout">
-        <section class="content-section detail-card" id="detalle-contenido">
-            <a class="back-link" href="/">← Volver al centro</a>
-            <p class="load-state" id="detalle-estado">Cargando incidente...</p>
+        <section class="content-section detail-card">
+            <a class="back-link" href="index.html">← Volver al centro</a>
+            <div class="section-heading detail-heading"><div><p class="eyebrow" id="detalle-etiqueta">CASO DESTACADO</p><h1 id="detalle-titulo">Cargando incidente...</h1></div><span id="detalle-severidad" class="badge">-</span></div>
+            <div class="detail-meta"><div><span>ID del incidente</span><strong id="detalle-id">-</strong></div><div><span>Fecha del incidente</span><strong id="detalle-fecha">-</strong></div><div><span>Estado</span><strong id="detalle-estado">-</strong></div><div><span>Reportante</span><strong id="detalle-reportante">-</strong></div></div>
+            <div class="detail-copy"><h2>Descripción del incidente</h2><p id="detalle-descripcion">Cargando información...</p><h2>Tipo de incidente</h2><p id="detalle-tipo">-</p></div>
         </section>
-        <aside class="insight-panel">
-            <p class="eyebrow">API</p>
-            <h2>GET /api/incidentes/:id</h2>
-            <p>El detalle se obtiene del servidor. Si el identificador no existe, la API responde 404.</p>
-        </aside>
+        <aside class="insight-panel"><p class="eyebrow">ESTADO ACTUAL</p><h2>Contención activa</h2><p>El incidente permanece bajo observación mientras se completa el análisis forense.</p><div class="detail-stat"><span>Próximo paso</span><strong>Emitir informe final</strong></div><div class="detail-stat"><span>Prioridad</span><strong>Máxima</strong></div></aside>
     </main>
-    <footer>
-        <p><strong>SecureGuard</strong> · Desarrollo de plataformas · PUCE · Semana 3</p>
-        <p>© 2026 Alejandro Carriel</p>
-    </footer>
-    <script type="module" src="/js/detalle.js"></script>
+    <footer><p><strong>SecureGuard</strong> · Proyecto académico de Desarrollo de plataformas</p><p>© 2026 Alejandro Carriel</p></footer>
+    <script type="module" src="js/detalle.js"></script>
 </body>
 </html>

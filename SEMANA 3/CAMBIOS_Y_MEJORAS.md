@@ -1,81 +1,54 @@
-# Cambios y mejoras — Semana 3 frente a Semanas 1 y 2
+# Cambios y mejoras — Semana 3 vs Semanas 1 y 2
 
-**Asignatura:** Desarrollo de plataformas · PUCE  
-**Estudiante:** Alejandro Carriel  
-**Entregable:** SecureGuard (gestión académica de incidentes de ciberseguridad)
+**Proyecto:** SecureGuard (gestión de incidentes de ciberseguridad)  
+**Autor:** Alejandro Carriel · PUCE · Desarrollo de Plataformas  
 
----
+Este documento resume qué se conservó del trabajo de **SEMANA 1 Y 2** y qué se mejoró en **SEMANA 3**.
 
-## 1. Qué cambió
-
-En **Semanas 1 y 2** la aplicación era un prototipo **estático**: HTML, CSS y JavaScript en el navegador, con datos leídos desde un archivo `incidentes.json` local (sin servidor de aplicación). La creación de incidentes ocurría solo en memoria del cliente y se perdía al recargar.
-
-En **Semana 3** el mismo dominio funcional evoluciona a una **plataforma digital** con:
-
-- Servidor **Node.js** (`http` nativo).
-- **API HTTP/JSON** (`GET`/`POST` sobre `/api/incidentes`).
-- **Arquitectura por capas** (dominio, aplicación, presentación, infraestructura, persistencia).
-- **Persistencia** en archivo JSON administrado por el servidor.
-- Cliente en `public/` que consume la API en lugar de leer el JSON directamente.
-
----
-
-## 2. Mejoras
-
-| Dimensión | Beneficio en Semana 3 |
-|-----------|------------------------|
-| Separación de responsabilidades | UI, reglas de negocio, transporte HTTP y almacenamiento quedan desacoplados. |
-| Escalabilidad académica | Se puede sustituir el repositorio JSON por una base de datos sin reescribir la UI. |
-| Mantenibilidad | Cambios de validación viven en dominio/aplicación; el HTML no mezcla lógica de negocio. |
-| Contrato HTTP | Endpoints claros facilitan pruebas con el navegador, `curl` o clientes futuros. |
-| Persistencia | Los incidentes creados se guardan en el servidor y sobreviven a la recarga del cliente. |
-| Seguridad básica | Validación de entrada en servidor; rutas estáticas normalizadas para evitar path traversal; respuestas JSON tipadas y códigos HTTP coherentes (400/404/500). |
-
----
-
-## 3. Qué se preservó
-
-- Identidad visual y tipografía (**SecureGuard**, DM Sans / Space Grotesk).
-- Flujo de usuario: listado, registro con validación de formulario y vista de detalle.
-- Campos del incidente: título, descripción, severidad, tipo, fecha, estado, reportante.
-- Enfoque académico/defensivo (gestión de incidentes, no material ofensivo).
-- Datos de ejemplo iniciales (INC-001 … INC-003) como semilla.
-
----
-
-## 4. Cómo ejecutar y estructura
-
-```bash
-cd "SEMANA 3"
-npm start
-# Cliente: http://localhost:3000
-# API:     http://localhost:3000/api/incidentes
-```
-
-Capas en `src/`:
-
-1. **domain** — creación y validación del incidente.  
-2. **application** — casos de uso (listar, obtener, registrar).  
-3. **presentation** — controlador de la API.  
-4. **infrastructure** — servidor HTTP y archivos estáticos.  
-5. **persistence** — repositorio sobre `data/incidentes.json`.
-
----
-
-## 5. Tabla comparativa (antes / después)
+## Antes / después
 
 | Aspecto | Semanas 1 y 2 | Semana 3 |
 |---------|---------------|----------|
-| Ejecución | Abrir `index.html` en el navegador | `npm start` → servidor en puerto 3000 |
-| Datos | `incidentes.json` estático (fetch local) | API + archivo JSON en el servidor |
-| Alta de incidentes | Solo en memoria del navegador | `POST /api/incidentes` con persistencia |
-| Arquitectura | MVC ligero en el cliente | n-capas en el servidor + cliente delgado |
-| Dependencias | Ninguna (HTML/CSS/JS) | Node.js ≥ 18 (sin paquetes npm) |
-| Detalle | Página mayormente estática / hardcodeada | Detalle dinámico vía `GET /api/incidentes/:id` |
-| Documentación | Informes de revisión Unidad I | `README.md` + este documento de cambios |
+| Ejecución | Archivos estáticos + servidor local genérico (`http.server`) | Servidor **Node.js** propio (`npm start`) |
+| Datos | `incidentes.json` leído solo en el navegador (`fetch`) | Persistencia en servidor (`src/persistence`) vía API |
+| Lógica de negocio | Validación y estado en el front (JS del navegador) | Validación y casos de uso en **capa application** |
+| Arquitectura | MVC ligero en el cliente (`modelo` / `vista` / `controlador`) | Capas: domain → application → presentation → infrastructure → persistence |
+| Comunicación | Sin API real | REST JSON (`/api/salud`, `/api/incidentes`, `POST`) |
+| Escalabilidad | Difícil compartir estado entre clientes | Base lista para varios clientes contra el mismo backend |
+| Entregable | HTML/CSS/JS + informes MD | App runnable + informe PDF + este documento |
 
----
+## Qué se conservó
 
-## 6. Conclusión
+- Identidad visual y UX de SecureGuard (panel, métricas, formulario, detalle).
+- Enfoque académico de **separación de responsabilidades** (antes MVC en cliente; ahora capas en servidor + módulos ES en el front).
+- Validaciones de negocio (título, descripción, severidad, tipo, fecha, correo).
+- Dominio de incidentes de ciberseguridad (severidad, tipo, estado, etc.).
 
-La Semana 3 no reemplaza el trabajo anterior: lo **profesionaliza** al introducir un servidor, un contrato HTTP y una separación por capas alineada con el desarrollo de plataformas digitales, manteniendo la experiencia de usuario y el dominio SecureGuard construidos en Semanas 1 y 2.
+## Mejoras principales
+
+1. **Backend real:** `server.js` + `http` nativo sirven estáticos y API sin Express (menos magia, más control para la materia).
+2. **API REST:** el front ya no “simula” el backend; consume endpoints y recibe errores estructurados (`ok`, `mensaje`, `detalles`).
+3. **Arquitectura por capas:**
+   - `domain`: entidad `Incidente`
+   - `application`: listar / obtener / registrar + validación
+   - `presentation`: controladores HTTP
+   - `infrastructure`: servidor y enrutado
+   - `persistence`: repositorio sobre JSON
+4. **Persistencia centralizada:** altas hechas por `POST` quedan en el servidor (archivo JSON), no solo en memoria del navegador.
+5. **Mantenibilidad:** cambiar almacenamiento (p. ej. a SQLite/Mongo) implica tocar sobre todo `persistence`, no el HTML.
+6. **Documentación de portafolio:** `README.md` de ejecución + este changelog para evidencia académica en GitHub.
+
+## Cómo probar el salto funcional
+
+1. En Semanas 1–2 hacía falta un server estático y el alta vivía en la sesión del navegador.
+2. En Semana 3:
+   ```bash
+   cd "SEMANA 3"
+   npm start
+   ```
+3. Verificar `GET http://localhost:3000/api/salud` y `GET /api/incidentes`.
+4. Registrar un incidente desde la UI y confirmar que aparece en el listado y en la API.
+
+## Conclusión
+
+Semana 3 no reemplaza el aprendizaje de front de Semanas 1 y 2: lo **extiende**. El mismo producto académico pasa de prototipo de interfaz a **aplicación web con API y diseño en capas**, alineado a buenas prácticas de desarrollo de plataformas.

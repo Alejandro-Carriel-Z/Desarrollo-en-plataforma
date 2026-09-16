@@ -1,32 +1,46 @@
 [
   {
+    "id": "INC-364274-390",
+    "titulo": "Ramsoware",
+    "descripcion": "Equipos bloquedos con clave y un mensaje que dice secuestrado pagar 400 para no ser publicados|",
+    "severidad": "critica",
+    "fecha": "2026-09-16",
+    "estado": "En investigación",
+    "tipo": "Malware",
+    "reportante": "Juan@finanzas.com"
+  },
+  {
+    "id": "INC-122581-893",
+    "titulo": "posible Phishing",
+    "descripcion": "dfewgrweggwregrwgwrgwrgrwgwr",
+    "severidad": "critica",
+    "fecha": "2026-09-16",
+    "estado": "En investigación",
+    "tipo": "Phishing",
+    "reportante": "juan@ciberseguridad.com"
+  },
+  {
     "id": "INC-001",
     "titulo": "Intento de acceso phishing masivo",
-    "descripcion": "Campaña de correos fraudulentos dirigida a personal administrativo.",
     "severidad": "alta",
     "fecha": "2026-09-03",
     "estado": "En investigación",
-    "tipo": "Phishing",
-    "reportante": "soc@secureguard.edu"
+    "tipo": "Phishing"
   },
   {
     "id": "INC-002",
     "titulo": "Acceso no autorizado a servidor",
-    "descripcion": "Fuerza bruta desde IP externa contra el servidor de producción.",
     "severidad": "critica",
     "fecha": "2026-09-02",
     "estado": "Contención en curso",
-    "tipo": "Acceso no autorizado",
-    "reportante": "soc@secureguard.edu"
+    "tipo": "Acceso no autorizado"
   },
   {
     "id": "INC-003",
     "titulo": "Vulnerabilidad detectada en aplicación interna",
-    "descripcion": "Configuración insegura en el módulo de autenticación.",
     "severidad": "media",
     "fecha": "2026-09-01",
     "estado": "Resuelto",
-    "tipo": "Vulnerabilidad",
-    "reportante": "desarrollo@secureguard.edu"
+    "tipo": "Vulnerabilidad"
   }
 ]

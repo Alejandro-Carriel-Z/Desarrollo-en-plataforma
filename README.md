@@ -10,24 +10,22 @@ Portafolio académico de la materia **Desarrollo de Plataformas**. El trabajo se
 
 | Carpeta | Contenido |
 |---------|-----------|
-| [`SEMANA 1 Y 2/`](./SEMANA%201%20Y%202/) | Proyecto web de gestión de incidentes (HTML/CSS/JS) |
-| [`SEMANA 3/`](./SEMANA%203/) | Unidad 3: plataforma digital, n-capas, HTTP y servidor Node.js |
+| [`SEMANA 1 Y 2/`](./SEMANA%201%20Y%202/) | Prototipo web SecureGuard (HTML/CSS/JS, MVC ligero) + informes |
+| [`SEMANA 3/`](./SEMANA%203/) | App Node.js por capas + API REST + [`CAMBIOS_Y_MEJORAS.md`](./SEMANA%203/CAMBIOS_Y_MEJORAS.md) |
 
-## Cómo revisar Semana 1 y 2
+## Cómo revisar
 
-Abre `SEMANA 1 Y 2/index.html` en el navegador (o sirve la carpeta con un servidor estático local).
+**Semanas 1 y 2:** abre `SEMANA 1 Y 2/index.html` con un servidor estático local.
 
-## Cómo revisar Semana 3
+**Semana 3:**
 
 ```bash
 cd "SEMANA 3"
 npm start
 ```
 
-Abrir http://localhost:3000 y http://localhost:3000/api/incidentes  
-
-Detalle de cambios frente a Semanas 1–2: [`SEMANA 3/CAMBIOS_Y_MEJORAS.md`](./SEMANA%203/CAMBIOS_Y_MEJORAS.md).
+Luego visita http://localhost:3000
 
 ## Contacto
 
-GitHub: [Alejandro-Carriel-Z](https://github.com/Alejandro-Carriel-Z)
+GitHub: [socotroco811](https://github.com/socotroco811)

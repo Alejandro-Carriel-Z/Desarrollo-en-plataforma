@@ -1,12 +1,10 @@
-"use strict";
+﻿const { crearServidor } = require("./src/infrastructure/http");
+const PUERTO = process.env.PORT || 3000;
+const servidor = crearServidor();
 
-const { crearServidor } = require("./src/infrastructure/http");
-
-const PUERTO = Number(process.env.PORT) || 3000;
-
-crearServidor().listen(PUERTO, () => {
-  console.log("SecureGuard — Unidad 3 (arquitectura por capas)");
-  console.log(`Cliente:  http://localhost:${PUERTO}`);
-  console.log(`API JSON: http://localhost:${PUERTO}/api/incidentes`);
-  console.log(`Salud:    http://localhost:${PUERTO}/api/salud`);
+servidor.listen(PUERTO, () => {
+    console.log("SecureGuard - Unidad 3");
+    console.log(`Cliente: http://localhost:${PUERTO}`);
+    console.log(`API JSON: http://localhost:${PUERTO}/api/incidentes`);
+    console.log(`Salud: http://localhost:${PUERTO}/api/salud`);
 });
