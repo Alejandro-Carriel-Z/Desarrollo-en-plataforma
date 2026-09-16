@@ -1,0 +1,5 @@
+[
+  {"id":"INC-001","titulo":"Intento de acceso phishing masivo","descripcion":"Campaña de correos fraudulentos.","severidad":"alta","fecha":"2026-09-03","estado":"En investigación","tipo":"Phishing","reportante":"soc@secureguard.edu"},
+  {"id":"INC-002","titulo":"Acceso no autorizado a servidor","descripcion":"Fuerza bruta desde IP externa.","severidad":"critica","fecha":"2026-09-02","estado":"Contención en curso","tipo":"Acceso no autorizado","reportante":"soc@secureguard.edu"},
+  {"id":"INC-003","titulo":"Vulnerabilidad detectada en aplicación interna","descripcion":"Configuración insegura en autenticación.","severidad":"media","fecha":"2026-09-01","estado":"Resuelto","tipo":"Vulnerabilidad","reportante":"desarrollo@secureguard.edu"}
+]
