@@ -1,4 +1,4 @@
-const { crearIncidente } = require("../domain/incidente");
+const { crearIncidente, SEVERIDADES, ESTADOS, etiquetaTipo } = require("../domain/incidente");
 const modelo = require("../models/incidentes.model");
 
 function validar(datos, parcial = false) {
@@ -6,10 +6,12 @@ function validar(datos, parcial = false) {
   const titulo = String(datos.titulo || "").trim();
   const descripcion = String(datos.descripcion || "").trim();
   const correo = String(datos.correo || datos.reportante || "").trim();
+  const severidad = String(datos.severidad || "").trim().toLowerCase();
+  const fecha = String(datos.fecha || "").trim();
 
   if (!parcial || datos.titulo !== undefined) {
     if (titulo.length < 5) errores.titulo = "Escribe un título de al menos 5 caracteres.";
-    else if (titulo.length > 100) errores.titulo = "El titulo no puede superar los 100 caracteres.";
+    else if (titulo.length > 100) errores.titulo = "El título no puede superar los 100 caracteres.";
   }
 
   if (!parcial || datos.descripcion !== undefined) {
@@ -18,24 +20,26 @@ function validar(datos, parcial = false) {
   }
 
   if (!parcial || datos.severidad !== undefined) {
-    if (!datos.severidad) errores.severidad = "Seleccione una severidad";
+    if (!SEVERIDADES.includes(severidad)) errores.severidad = "Selecciona una severidad.";
   }
 
   if (!parcial || datos.tipo !== undefined) {
-    if (!datos.tipo) errores.tipo = "Selecciona un tipo de incidente.";
+    if (!etiquetaTipo(datos.tipo)) errores.tipo = "Selecciona un tipo de incidente.";
   }
 
   if (!parcial || datos.fecha !== undefined) {
-    if (!datos.fecha) errores.fecha = "Selecciona la fecha del incidente.";
-    else if (datos.fecha > new Date().toISOString().slice(0, 10)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) errores.fecha = "Selecciona la fecha del incidente.";
+    else if (fecha > new Date().toISOString().slice(0, 10)) {
       errores.fecha = "La fecha no puede ser futura.";
     }
   }
 
   if (!parcial || datos.correo !== undefined || datos.reportante !== undefined) {
-    if (correo && !/^\S+@\S+\.\S+$/.test(correo)) {
-      errores.correo = "Introduce un correo válido.";
-    }
+    if (!/^\S+@\S+\.\S+$/.test(correo)) errores.correo = "Introduce un correo válido.";
+  }
+
+  if (datos.estado !== undefined && !ESTADOS.includes(String(datos.estado).trim())) {
+    errores.estado = "Selecciona un estado válido.";
   }
 
   return errores;
@@ -49,6 +53,25 @@ function lanzarValidacion(errores) {
   throw error;
 }
 
+function prepararCambios(datos) {
+  const cambios = {};
+
+  if (datos.titulo !== undefined) cambios.titulo = String(datos.titulo).trim();
+  if (datos.descripcion !== undefined) cambios.descripcion = String(datos.descripcion).trim();
+  if (datos.severidad !== undefined) {
+    cambios.severidad = String(datos.severidad).trim().toLowerCase();
+    cambios.prioridad = cambios.severidad;
+  }
+  if (datos.tipo !== undefined) cambios.tipo = etiquetaTipo(datos.tipo);
+  if (datos.fecha !== undefined) cambios.fecha = String(datos.fecha).trim();
+  if (datos.correo !== undefined || datos.reportante !== undefined) {
+    cambios.reportante = String(datos.correo || datos.reportante || "").trim();
+  }
+  if (datos.estado !== undefined) cambios.estado = String(datos.estado).trim();
+
+  return cambios;
+}
+
 async function listarIncidentes(filtro) {
   return modelo.listar(filtro);
 }
@@ -58,15 +81,24 @@ async function obtenerIncidente(id) {
 }
 
 async function registrarIncidente(datos) {
-  lanzarValidacion(validar(datos));
+  lanzarValidacion(validar(datos || {}));
   return modelo.guardar(crearIncidente(datos));
 }
 
-async function actualizarIncidente(id, datos) {
+async function actualizarIncidente(id, datos, parcial = true) {
+  const cuerpo = datos || {};
+  lanzarValidacion(validar(cuerpo, parcial));
+
+  const cambios = prepararCambios(cuerpo);
+  if (!Object.keys(cambios).length) {
+    const error = new Error("No hay campos para actualizar.");
+    error.status = 400;
+    throw error;
+  }
+
   const actual = await modelo.obtenerPorId(id);
   if (!actual) return null;
-  lanzarValidacion(validar(datos, true));
-  return modelo.actualizar(id, datos);
+  return modelo.actualizar(id, cambios);
 }
 
 async function eliminarIncidente(id) {

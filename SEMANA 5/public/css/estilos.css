@@ -83,3 +83,80 @@ footer { display: flex; justify-content: space-between; gap: 1rem; padding: 1.4r
   min-height: 40px;
   padding: 0.35rem 0.6rem;
 }
+
+.card-actions,
+.form-actions,
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-actions {
+  margin-top: 0.85rem;
+}
+
+.estado-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.estado-control select,
+.detail-actions select {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.4rem;
+}
+
+.button-small {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.button-ghost {
+  color: var(--teal-dark);
+  background: var(--mint);
+}
+
+.button-danger {
+  color: #fff;
+  background: var(--red);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.incident-card.estado-cerrado {
+  opacity: 0.72;
+}
+
+.empty-state {
+  color: var(--muted);
+  padding: 0.5rem 0 1rem;
+}
+
+.detail-actions {
+  align-items: flex-end;
+  margin-top: 1.6rem;
+}
+
+.detail-actions label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}

@@ -18,6 +18,14 @@
             <div class="section-heading detail-heading"><div><p class="eyebrow" id="detalle-etiqueta">CASO DESTACADO</p><h1 id="detalle-titulo">Cargando incidente...</h1></div><span id="detalle-severidad" class="badge">-</span></div>
             <div class="detail-meta"><div><span>ID del incidente</span><strong id="detalle-id">-</strong></div><div><span>Fecha del incidente</span><strong id="detalle-fecha">-</strong></div><div><span>Estado</span><strong id="detalle-estado">-</strong></div><div><span>Reportante</span><strong id="detalle-reportante">-</strong></div></div>
             <div class="detail-copy"><h2>Descripción del incidente</h2><p id="detalle-descripcion">Cargando información...</p><h2>Tipo de incidente</h2><p id="detalle-tipo">-</p></div>
+            <div class="detail-actions" id="detalle-acciones" hidden>
+                <label for="detalle-select-estado">Cambiar estado
+                    <select id="detalle-select-estado"></select>
+                </label>
+                <a class="button button-ghost" id="detalle-editar" href="index.html">Editar</a>
+                <button class="button button-danger" id="detalle-eliminar" type="button">Eliminar</button>
+            </div>
+            <p id="detalle-aviso" class="field-message" role="status"></p>
         </section>
         <aside class="insight-panel"><p class="eyebrow">ESTADO ACTUAL</p><h2>Contención activa</h2><p>El incidente permanece bajo observación mientras se completa el análisis forense.</p><div class="detail-stat"><span>Próximo paso</span><strong>Emitir informe final</strong></div><div class="detail-stat"><span>Prioridad</span><strong>Máxima</strong></div></aside>
     </main>

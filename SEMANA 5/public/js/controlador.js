@@ -1,4 +1,12 @@
-import { crearIncidente, obtenerIncidentes } from "./modelo.js";
+import {
+  actualizarIncidente,
+  cambiarEstado,
+  claveTipo,
+  crearIncidente,
+  eliminarIncidente,
+  obtenerIncidente,
+  obtenerIncidentes
+} from "./modelo.js";
 import {
   anunciar,
   actualizarMetricas,
@@ -9,8 +17,25 @@ import {
 
 const formulario = document.querySelector("#formulario-incidente");
 const lista = document.querySelector("#lista-incidentes");
-const filtro = document.querySelector("#filtro-severidad");
-let incidentes = [];
+const filtroSeveridad = document.querySelector("#filtro-severidad");
+const filtroEstado = document.querySelector("#filtro-estado");
+const botonEnviar = document.querySelector("#boton-enviar");
+const botonCancelar = document.querySelector("#boton-cancelar");
+const etiquetaFormulario = document.querySelector("#etiqueta-formulario");
+const tituloFormulario = document.querySelector("#titulo-formulario");
+
+const CAMPOS_FORMULARIO = [
+  "titulo", "descripcion", "severidad", "tipo", "fecha", "correo", "confirmacion"
+];
+
+let incidentesVisibles = [];
+let editandoId = null;
+let ocupado = false;
+let carga = 0;
+
+function erroresVacios() {
+  return Object.fromEntries(CAMPOS_FORMULARIO.map((campo) => [campo, ""]));
+}
 
 function validarFormulario(datos) {
   const errores = {};
@@ -45,38 +70,107 @@ function leerFormulario() {
   return datos;
 }
 
-// Al iniciar, pide los casos al servidor (GET /api/incidentes).
-async function iniciar(severidad = "") {
+function filtrosActuales() {
+  return {
+    severidad: filtroSeveridad.value,
+    estado: filtroEstado.value
+  };
+}
+
+function modoCreacion() {
+  editandoId = null;
+  etiquetaFormulario.textContent = "NUEVO REPORTE";
+  tituloFormulario.textContent = "Registrar incidente";
+  botonEnviar.textContent = "Crear reporte";
+  botonCancelar.hidden = true;
+  formulario.reset();
+  mostrarErrores(erroresVacios());
+}
+
+function modoEdicion(incidente) {
+  editandoId = incidente.id;
+  etiquetaFormulario.textContent = "EDICIÓN";
+  tituloFormulario.textContent = `Editar ${incidente.id}`;
+  botonEnviar.textContent = "Guardar cambios";
+  botonCancelar.hidden = false;
+  mostrarErrores(erroresVacios());
+
+  formulario.elements.titulo.value = incidente.titulo || "";
+  formulario.elements.descripcion.value = incidente.descripcion || "";
+  formulario.elements.severidad.value = incidente.severidad || "";
+  formulario.elements.tipo.value = claveTipo(incidente.tipo);
+  formulario.elements.fecha.value = incidente.fecha || "";
+  formulario.elements.correo.value = incidente.reportante || "";
+  formulario.elements.confirmacion.checked = false;
+}
+
+function textoError(error) {
+  const detalles = error.detalles ? Object.values(error.detalles).filter(Boolean) : [];
+  if (!detalles.length) return error.message;
+  return `${error.message} ${detalles.join(" ")}`;
+}
+
+function marcarOcupado(activo, textoBoton) {
+  ocupado = activo;
+  botonEnviar.disabled = activo;
+  lista.setAttribute("aria-busy", String(activo));
+  if (textoBoton) botonEnviar.textContent = textoBoton;
+}
+
+async function iniciar() {
+  const filtros = filtrosActuales();
+  const activo = Boolean(filtros.severidad || filtros.estado);
+  const ticket = ++carga;
   try {
-    incidentes = await obtenerIncidentes(severidad);
-    renderizarIncidentes(incidentes, lista);
-    actualizarMetricas(incidentes);
-    mostrarCarga(`${incidentes.length} casos sincronizados vía API REST`);
+    const visibles = await obtenerIncidentes(filtros);
+    const todos = activo ? await obtenerIncidentes() : visibles;
+    if (ticket !== carga) return;
+    incidentesVisibles = visibles;
+    renderizarIncidentes(visibles, lista);
+    actualizarMetricas(todos);
+    mostrarCarga(activo
+      ? `${visibles.length} casos con el filtro activo · ${todos.length} en total`
+      : `${visibles.length} casos sincronizados vía API REST`);
   } catch (error) {
+    if (ticket !== carga) return;
     mostrarCarga("No se pudo sincronizar con el servidor");
-    anunciar(error.message);
-    lista.innerHTML = '<p class="load-state">El cliente no recibió JSON del servidor Express.</p>';
+    anunciar(textoError(error));
+    lista.innerHTML = '<p class="empty-state">El cliente no recibió JSON del servidor Express.</p>';
   }
 }
 
-const CAMPOS_FORMULARIO = [
-  "titulo", "descripcion", "severidad", "tipo", "fecha", "correo", "confirmacion"
-];
+async function entrarEnEdicion(id) {
+  try {
+    const incidente = incidentesVisibles.find((item) => item.id === id) || await obtenerIncidente(id);
+    if (!incidente) {
+      anunciar(`No existe el incidente ${id}.`);
+      return;
+    }
+    modoEdicion(incidente);
+    anunciar(`Editando ${incidente.id}. Los cambios se enviarán con PUT.`);
+    document.querySelector("#registro-incidente").scrollIntoView({ behavior: "smooth" });
+    formulario.elements.titulo.focus();
+  } catch (error) {
+    anunciar(error.message);
+  }
+}
 
 formulario.addEventListener("input", () => {
-  mostrarErrores(Object.fromEntries(CAMPOS_FORMULARIO.map((campo) => [campo, ""])));
+  mostrarErrores(erroresVacios());
 });
 
-// El submit ahora es async: espera el POST al servidor antes de pintar.
+botonCancelar.addEventListener("click", () => {
+  modoCreacion();
+  anunciar("Edición cancelada.");
+});
+
 formulario.addEventListener("submit", async (evento) => {
   evento.preventDefault();
+  if (ocupado) return;
+
   const datos = leerFormulario();
   const errores = validarFormulario(datos);
-
-  mostrarErrores({
-    titulo: "", descripcion: "", severidad: "", tipo: "",
-    fecha: "", correo: "", confirmacion: "", ...errores
-  });
+  mostrarErrores({ ...erroresVacios(), ...errores });
 
   if (Object.keys(errores).length) {
     anunciar("El formulario tiene errores. Revisa los campos indicados.");
@@ -84,26 +178,90 @@ formulario.addEventListener("submit", async (evento) => {
     return;
   }
 
-  try {
-    // confirmacion solo existe en el cliente; el API no la necesita.
-    const { confirmacion, ...payload } = datos;
-    const nuevoIncidente = await crearIncidente(payload);
+  const { confirmacion, ...payload } = datos;
+  const eraEdicion = Boolean(editandoId);
+  const idEditado = editandoId;
 
-    incidentes = [nuevoIncidente, ...incidentes];
-    renderizarIncidentes(incidentes, lista);
-    actualizarMetricas(incidentes);
-    mostrarCarga(`${incidentes.length} casos sincronizados vía HTTP`);
-    formulario.reset();
-    anunciar(`Incidente ${nuevoIncidente.id} persistido en el servidor.`);
+  try {
+    marcarOcupado(true, eraEdicion ? "Guardando..." : "Creando...");
+    if (eraEdicion) {
+      await actualizarIncidente(idEditado, payload);
+      anunciar(`Incidente ${idEditado} actualizado en el servidor.`);
+    } else {
+      const nuevoIncidente = await crearIncidente(payload);
+      anunciar(`Incidente ${nuevoIncidente.id} persistido en el servidor.`);
+    }
+    modoCreacion();
+    await iniciar();
     document.querySelector("#listado-incidentes").scrollIntoView({ behavior: "smooth" });
   } catch (error) {
-    if (error.detalles) mostrarErrores(error.detalles);
-    anunciar(error.message);
+    if (error.detalles) mostrarErrores({ ...erroresVacios(), ...error.detalles });
+    anunciar(textoError(error));
+    botonEnviar.textContent = eraEdicion ? "Guardar cambios" : "Crear reporte";
+  } finally {
+    ocupado = false;
+    botonEnviar.disabled = false;
+    lista.setAttribute("aria-busy", "false");
   }
 });
 
-filtro.addEventListener("change", () => {
-  iniciar(filtro.value);
+lista.addEventListener("click", async (evento) => {
+  const boton = evento.target.closest("[data-accion='editar'], [data-accion='eliminar']");
+  if (!boton || ocupado) return;
+
+  const id = boton.dataset.id;
+  if (boton.dataset.accion === "editar") {
+    await entrarEnEdicion(id);
+    return;
+  }
+
+  const confirmar = window.confirm(
+    `¿Eliminar ${id}? El servidor no borra la fila: cierra el caso y deja el estado en Cerrado.`
+  );
+  if (!confirmar) return;
+
+  try {
+    marcarOcupado(true);
+    await eliminarIncidente(id);
+    anunciar(`Incidente ${id} cerrado. DELETE aplicó el cierre lógico.`);
+    await iniciar();
+  } catch (error) {
+    anunciar(textoError(error));
+  } finally {
+    ocupado = false;
+    botonEnviar.disabled = false;
+    lista.setAttribute("aria-busy", "false");
+  }
 });
 
-iniciar();
+lista.addEventListener("change", async (evento) => {
+  const select = evento.target.closest("[data-accion='estado']");
+  if (!select || ocupado) return;
+
+  const id = select.dataset.id;
+  const estado = select.value;
+
+  try {
+    marcarOcupado(true);
+    await cambiarEstado(id, estado);
+    anunciar(`Estado de ${id} actualizado a ${estado}.`);
+    await iniciar();
+  } catch (error) {
+    anunciar(textoError(error));
+    await iniciar();
+  } finally {
+    ocupado = false;
+    botonEnviar.disabled = false;
+    lista.setAttribute("aria-busy", "false");
+  }
+});
+
+filtroSeveridad.addEventListener("change", () => iniciar());
+filtroEstado.addEventListener("change", () => iniciar());
+
+document.querySelector("#fecha").max = new Date().toISOString().slice(0, 10);
+
+iniciar().then(() => {
+  const editar = new URLSearchParams(window.location.search).get("editar");
+  if (editar) entrarEnEdicion(editar);
+});

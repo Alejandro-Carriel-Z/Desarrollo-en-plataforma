@@ -1,4 +1,16 @@
 const prisma = require("../lib/prisma");
+const { etiquetaTipo } = require("../domain/incidente");
+
+const CAMPOS_EDITABLES = [
+  "titulo",
+  "descripcion",
+  "severidad",
+  "prioridad",
+  "estado",
+  "tipo",
+  "fecha",
+  "reportante"
+];
 
 function aCliente(row) {
   if (!row) return null;
@@ -17,9 +29,10 @@ function aCliente(row) {
 
 async function listar(filtro = {}) {
   const where = {};
-  if (filtro.severidad) where.severidad = filtro.severidad;
-  if (filtro.prioridad) where.prioridad = filtro.prioridad;
-  if (filtro.estado) where.estado = filtro.estado;
+  if (filtro.severidad) where.severidad = String(filtro.severidad).trim().toLowerCase();
+  if (filtro.prioridad) where.prioridad = String(filtro.prioridad).trim();
+  if (filtro.estado) where.estado = String(filtro.estado).trim();
+  if (filtro.tipo) where.tipo = etiquetaTipo(filtro.tipo) || String(filtro.tipo).trim();
 
   const filas = await prisma.incidente.findMany({
     where,
@@ -75,9 +88,12 @@ async function actualizar(id, cambios) {
   });
   if (!actual) return null;
 
-  const data = { ...cambios };
-  if (data.severidad && !data.prioridad) data.prioridad = data.severidad;
-  delete data.id;
+  const data = {};
+  for (const campo of CAMPOS_EDITABLES) {
+    if (cambios[campo] !== undefined) data[campo] = cambios[campo];
+  }
+  if (data.severidad && data.prioridad === undefined) data.prioridad = data.severidad;
+  if (!Object.keys(data).length) return aCliente(actual);
 
   const actualizado = await prisma.incidente.update({
     where: { id: actual.id },

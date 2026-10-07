@@ -29,11 +29,14 @@ Abre: http://localhost:3000
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | GET | `/api/salud` | Estado del servicio |
-| GET | `/api/incidentes` | Listado JSON |
+| GET | `/api/incidentes` | Listado JSON. Filtros: `severidad`, `estado`, `tipo`, `prioridad` |
 | GET | `/api/incidentes/:id` | Detalle |
 | POST | `/api/incidentes` | Crear incidente |
-| PATCH | `/api/incidentes/:id` | Actualizar |
-| DELETE | `/api/incidentes/:id` | Cierre lógico |
+| PUT | `/api/incidentes/:id` | Reemplazar los datos editables |
+| PATCH | `/api/incidentes/:id` | Actualización parcial (por ejemplo, solo el estado) |
+| DELETE | `/api/incidentes/:id` | Cierre lógico (`estado = Cerrado`) |
+
+El detalle de la corrección del cliente está en [`CORRECCION_FLUJO_CRUD.md`](./CORRECCION_FLUJO_CRUD.md).
 
 ## Estructura
 

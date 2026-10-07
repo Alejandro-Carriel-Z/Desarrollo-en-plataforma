@@ -44,14 +44,14 @@
                 <small>Requieren seguimiento</small>
             </article>
             <article class="metric-card">
-                <span class="metric-label">Resueltos este mes</span>
-                <strong>12</strong>
-                <small>+18% frente al mes anterior</small>
+                <span class="metric-label">Resueltos</span>
+                <strong id="incidentes-resueltos">0</strong>
+                <small>Estado Resuelto</small>
             </article>
             <article class="metric-card">
-                <span class="metric-label">Tiempo de respuesta</span>
-                <strong>18m</strong>
-                <small>Promedio del equipo SOC</small>
+                <span class="metric-label">Cerrados</span>
+                <strong id="incidentes-cerrados">0</strong>
+                <small>Cierre lógico</small>
             </article>
         </section>
 
@@ -72,6 +72,15 @@
                         <option value="media">Media</option>
                         <option value="baja">Baja</option>
                     </select>
+                    <label for="filtro-estado">Filtrar por estado</label>
+                    <select id="filtro-estado">
+                        <option value="">Todos</option>
+                        <option value="abierto">Abierto</option>
+                        <option value="En investigación">En investigación</option>
+                        <option value="Contención en curso">Contención en curso</option>
+                        <option value="Resuelto">Resuelto</option>
+                        <option value="Cerrado">Cerrado</option>
+                    </select>
                     <span id="estado-carga" class="load-state">Cargando datos...</span>
                 </div>
             </div>
@@ -82,8 +91,8 @@
             <section id="registro-incidente" class="content-section form-section">
                 <div class="section-heading">
                     <div>
-                        <p class="eyebrow">NUEVO REPORTE</p>
-                        <h2>Registrar incidente</h2>
+                        <p class="eyebrow" id="etiqueta-formulario">NUEVO REPORTE</p>
+                        <h2 id="titulo-formulario">Registrar incidente</h2>
                     </div>
                     <span class="required-note">* Campos obligatorios</span>
                 </div>
@@ -137,7 +146,10 @@
                         <span>Confirmo que la información proporcionada es correcta.</span>
                     </label>
                     <small class="field-message" id="confirmacion-error"></small>
-                    <button class="button button-primary" type="submit">Crear reporte <span aria-hidden="true">+</span></button>
+                    <div class="form-actions">
+                        <button class="button button-primary" id="boton-enviar" type="submit">Crear reporte</button>
+                        <button class="button button-ghost" id="boton-cancelar" type="button" hidden>Cancelar edición</button>
+                    </div>
                 </form>
             </section>
 
