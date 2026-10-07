@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panel académico para registrar y supervisar incidentes de ciberseguridad.">
+    <title>SecureGuard | Centro de incidentes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> <!-- jQuery Añadido en semana 2-->
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-media" role="img" aria-label="Analista revisando un panel de seguridad informática"></div>
+        <div class="hero-content">
+            <p class="eyebrow">SECUREGUARD / UNIDAD I</p>
+            <h1>Centro de respuesta a incidentes</h1>
+            <p class="hero-copy">Un espacio claro para registrar, priorizar y dar seguimiento a eventos de seguridad.</p>
+            <a class="button button-primary" href="#registro-incidente">Registrar un incidente <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="hero-status" aria-label="Estado del centro"><span class="status-dot"></span>Centro operativo</div>
+    </header>
+
+    <nav class="site-nav" aria-label="Navegación principal">
+        <a class="brand" href="index.html"><span class="brand-mark">S</span> SecureGuard</a>
+        <ul>
+            <li><a href="#listado-incidentes">Incidentes</a></li>
+            <li><a href="#registro-incidente">Registrar</a></li>
+            <li><a href="detalle.html">Caso destacado</a></li>
+        </ul>
+    </nav>
+
+<section id="caja-login" class="content-section">
+    <p class="eyebrow">ACCESO</p>
+    <h2>Ingresar</h2>
+    <form id="formulario-login">
+        <div class="form-grid">
+            <div class="campo">
+                <label for="login-correo">Correo</label>
+                <input type="email" id="login-correo" name="correo" required placeholder="analista@secureguard.edu">
+            </div>
+            <div class="campo">
+                <label for="login-clave">Contraseña</label>
+                <input type="password" id="login-clave" name="password" required>
+            </div>
+        </div>
+        <button class="button button-primary" type="submit">Entrar</button>
+        <button class="button" type="button" id="cerrar-sesion">Salir</button>
+    </form>
+    <p id="sesion-actual">Sin sesión</p>
+</section>
+
+    <main>
+        <div id="mensaje-estado" class="sr-only" role="status" aria-live="polite"></div> <!-- Elemento para mensajes de estado accesibles añadido en semana 2 -->
+        <section class="metrics" aria-label="Resumen operativo">
+            <article class="metric-card metric-highlight">
+                <span class="metric-label">Incidentes registrados</span>
+                <strong id="total-incidentes">0</strong>
+                <small>Actualizado en vivo</small>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">Casos abiertos</span>
+                <strong id="incidentes-abiertos">0</strong>
+                <small>Requieren seguimiento</small>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">Resueltos este mes</span>
+                <strong>12</strong>
+                <small>+18% frente al mes anterior</small>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">Tiempo de respuesta</span>
+                <strong>18m</strong>
+                <small>Promedio del equipo SOC</small>
+            </article>
+        </section>
+
+        <section id="listado-incidentes" class="content-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">MONITOREO</p>
+                    <h2>Incidentes recientes</h2>
+                </div>
+                <label for="filtro-severidad">Filtrar por severidad
+                    <select id="filtro-severidad" name="filtro-severidad">
+                        <option value="">Todas</option>
+                        <option value="critica">Crítica</option>
+                        <option value="alta">Alta</option>
+                        <option value="media">Media</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </label>
+            </div>
+            <p id="estado-carga" class="load-state">Cargando datos...</p>
+            <div id="lista-incidentes" class="incident-grid" aria-live="polite"></div>
+        </section>
+
+        <div class="workspace-grid">
+            <section id="registro-incidente" class="content-section form-section">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">NUEVO REPORTE</p>
+                        <h2>Registrar incidente</h2>
+                    </div>
+                    <span class="required-note">* Campos obligatorios</span>
+                </div>
+                <form id="formulario-incidente">
+                    <div class="form-grid">
+                        <div class="campo campo-wide">
+                            <label for="titulo">Título del incidente <span aria-hidden="true">*</span></label>
+                            <input type="text" id="titulo" name="titulo" required minlength="5" maxlength="100" placeholder="Ej. Alerta de acceso irregular" aria-describedby="titulo-ayuda">
+                            <small id="titulo-ayuda">Entre 5 y 100 caracteres. Describe el evento, no la solución.</small>
+                        </div>
+                        <div class="campo campo-wide">
+                            <label for="descripcion">Descripción detallada <span aria-hidden="true">*</span></label>
+                            <textarea id="descripcion" name="descripcion" rows="4" required minlength="20" maxlength="500" placeholder="Describe qué ocurrió, cuándo y qué sistemas están involucrados" aria-describedby="descripcion-ayuda"></textarea>
+                            <small id="descripcion-ayuda">Mínimo 20 caracteres: qué pasó, cuándo y qué sistema está involucrado.</small>
+                        </div>
+                        <div class="campo">
+                            <label for="severidad">Severidad <span aria-hidden="true">*</span></label>
+                            <select id="severidad" name="severidad" required>
+                                <option value="">Seleccionar</option>
+                                <option value="critica">Crítica</option>
+                                <option value="alta">Alta</option>
+                                <option value="media">Media</option>
+                                <option value="baja">Baja</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="tipo">Tipo de incidente <span aria-hidden="true">*</span></label>
+                            <select id="tipo" name="tipo" required>
+                                <option value="">Seleccionar</option>
+                                <option value="phishing">Phishing</option>
+                                <option value="malware">Malware</option>
+                                <option value="acceso">Acceso no autorizado</option>
+                                <option value="vulnerabilidad">Vulnerabilidad</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="fecha">Fecha del incidente <span aria-hidden="true">*</span></label>
+                            <input type="date" id="fecha" name="fecha" required aria-describedby="fecha-ayuda">
+                            <small id="fecha-ayuda">No puede ser una fecha futura.</small>
+                        </div>
+                        <div class="campo">
+                            <label for="correo">Correo del reportante <span aria-hidden="true">*</span></label>
+                            <input type="email" id="correo" name="correo" required placeholder="nombre@empresa.com" aria-describedby="correo-ayuda">
+                            <small id="correo-ayuda">Usaremos este correo solo para dar seguimiento al reporte.</small>
+                        </div>
+                    </div>
+                    <label class="checkbox" for="confirmacion">
+                        <input type="checkbox" id="confirmacion" name="confirmacion" required>
+                        <span>Confirmo que la información proporcionada es correcta.</span>
+                    </label>
+                    <button class="button button-primary" type="submit">Crear reporte <span aria-hidden="true">+</span></button>
+                </form>
+            </section>
+
+            <aside class="insight-panel">
+                <p class="eyebrow">GUÍA SOC</p>
+                <h2>Primero contiene, después investiga.</h2>
+                <p>Registra la evidencia inicial y prioriza el impacto. Una bitácora clara reduce el tiempo de respuesta.</p>
+                <div class="tip-list">
+                    <div><span>01</span><p><strong>Identifica</strong><br>qué activo está comprometido.</p></div>
+                    <div><span>02</span><p><strong>Aísla</strong><br>la amenaza sin perder evidencia.</p></div>
+                    <div><span>03</span><p><strong>Documenta</strong><br>cada acción y responsable.</p></div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer>
+        <p><strong>SecureGuard</strong> · Proyecto académico de Desarrollo de plataformas</p>
+        <p>© 2026 Alejandro Carriel</p>
+    </footer>
+<script type="module" src="js/controlador.js"></script>
+</body>
+</html>

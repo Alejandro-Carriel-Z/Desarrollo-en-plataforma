@@ -1,4 +1,4 @@
-﻿# Desarrollo de Plataformas â€” PUCE
+# Desarrollo de Plataformas â€” PUCE
 
 **Estudiante:** Alejandro Carriel  
 **Universidad:** Pontificia Universidad CatÃ³lica del Ecuador (PUCE)  
@@ -14,6 +14,7 @@ Portafolio acadÃ©mico de la materia **Desarrollo de Plataformas**. El trabajo 
 | [`SEMANA 3/`](./SEMANA%203/) | App Node.js por capas + API REST |
 | [`SEMANA 4/`](./SEMANA%204/) | API Express de incidentes SecureGuard |
 | [`SEMANA 5/`](./SEMANA%205/) | Misma API con Prisma y MySQL |
+| [`SEMANA 6/`](./SEMANA%206/) | Login con JWT, roles, bcrypt y HTTPS |
 
 ## CÃ³mo revisar
 

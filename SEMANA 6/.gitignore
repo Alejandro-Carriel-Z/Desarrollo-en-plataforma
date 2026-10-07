@@ -1,0 +1,14 @@
+node_modules
+# Variables de entorno y llaves privadas: nunca al repositorio
+.env
+certs/
+*.pem
+*.key
+
+/src/generated/prisma
+
+# Archivos de asistentes de IA
+.agents/
+.claude/
+.windsurf/
+skills-lock.json

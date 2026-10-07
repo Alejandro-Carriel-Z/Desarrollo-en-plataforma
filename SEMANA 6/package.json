@@ -1,0 +1,26 @@
+{
+  "name": "secureguard-semana6",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SecureGuard API: login con JWT, roles, bcrypt y HTTPS sobre Prisma y MySQL",
+  "scripts": {
+    "start": "node server.js",
+    "cert": "node crear-cert.js",
+    "migrate": "prisma migrate dev --config prisma7.config.ts",
+    "generate": "prisma generate --config prisma7.config.ts",
+    "seed": "node src/seed.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-mariadb": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "selfsigned": "^5.5.0"
+  },
+  "devDependencies": {
+    "prisma": "^7.10.0"
+  }
+}
