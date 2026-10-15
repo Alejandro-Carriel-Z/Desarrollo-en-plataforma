@@ -14,6 +14,14 @@ async function pedir(ruta, opciones = {}) {
         }
     });
     const cuerpo = await respuesta.json();
+    if (respuesta.status === 401 && ruta.startsWith("/incidentes")) {
+        cerrarSesion();
+        window.dispatchEvent(new Event("sesion-expirada"));
+        throw new Error("Tu sesión venció o dejó de ser válida. Inicia sesión nuevamente.");
+    }
+    if (respuesta.status === 403) {
+        throw new Error("No tienes permisos para realizar esta acción con tu rol.");
+    }
     if (!respuesta.ok) throw new Error(cuerpo.mensaje || "Error de la API");
     return cuerpo;
 }

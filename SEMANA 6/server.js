@@ -18,6 +18,10 @@ if (!process.env.JWT_SECRET || !process.env.DATABASE_URL) {
     console.error("Faltan variables en .env (DATABASE_URL y JWT_SECRET). Copia .env.example a .env y completalas.");
     process.exit(1);
 }
+if (!/^[a-f0-9]{64}$/i.test(process.env.JWT_SECRET)) {
+    console.error("JWT_SECRET debe ser un valor aleatorio de 64 caracteres hexadecimales. Generalo con: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
+    process.exit(1);
+}
 
 const KEY = path.join(__dirname, "certs", "key.pem");
 const CERT = path.join(__dirname, "certs", "cert.pem");

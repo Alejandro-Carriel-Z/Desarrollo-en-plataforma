@@ -1,19 +1,5 @@
 const modelo = require("../models/incidentes.model");
-
-function exigir(datos) {
-    const errores = {};
-    if (!datos.titulo || String(datos.titulo).trim().length < 5) errores.titulo = "Mínimo 5 caracteres.";
-    if (!datos.descripcion || String(datos.descripcion).trim().length < 20) errores.descripcion = "Mínimo 20 caracteres.";
-    if (!datos.severidad) errores.severidad = "Selecciona una severidad.";
-    if (!datos.tipo) errores.tipo = "Selecciona un tipo.";
-    if (!datos.fecha) errores.fecha = "Selecciona la fecha.";
-    if (Object.keys(errores).length) {
-        const error = new Error("Validación fallida");
-        error.status = 400;
-        error.detalles = errores;
-        throw error;
-    }
-}
+const { validarCreacion, validarParche, validarReemplazo } = require("../validation/incidentes");
 
 async function listar(req, res, next) {
     try {
@@ -40,8 +26,8 @@ async function obtener(req, res, next) {
 
 async function crear(req, res, next) {
     try {
-        exigir(req.body);
-        res.status(201).json({ ok: true, datos: await modelo.crear(req.body) });
+        const datos = validarCreacion(req.body);
+        res.status(201).json({ ok: true, datos: await modelo.crear(datos) });
     } catch (error) {
         next(error);
     }
@@ -49,7 +35,10 @@ async function crear(req, res, next) {
 
 async function actualizar(req, res, next) {
     try {
-        const actualizado = await modelo.actualizar(req.params.id, req.body);
+        const cambios = req.method === "PATCH"
+            ? validarParche(req.body)
+            : validarReemplazo(req.body);
+        const actualizado = await modelo.actualizar(req.params.id, cambios);
         if (!actualizado) return res.status(404).json({ ok: false, mensaje: "Incidente no encontrado" });
         res.status(200).json({ ok: true, datos: actualizado });
     } catch (error) {

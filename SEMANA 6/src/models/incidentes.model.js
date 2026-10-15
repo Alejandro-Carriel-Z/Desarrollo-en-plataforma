@@ -62,8 +62,11 @@ async function crear(datos) {
 async function actualizar(id, cambios) {
     const actual = await prisma.incidente.findFirst({ where: donde(id) });
     if (!actual) return null;
-    const data = { ...cambios };
-    delete data.id;
+    const camposPermitidos = ["titulo", "descripcion", "severidad", "prioridad", "estado", "tipo", "fecha"];
+    const data = {};
+    for (const campo of camposPermitidos) {
+        if (Object.hasOwn(cambios, campo)) data[campo] = cambios[campo];
+    }
     if (data.severidad && !data.prioridad) data.prioridad = data.severidad;
     return aCliente(await prisma.incidente.update({ where: { id: actual.id }, data }));
 }

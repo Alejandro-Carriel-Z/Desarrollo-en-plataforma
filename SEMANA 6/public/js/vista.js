@@ -2,24 +2,56 @@ const NOMBRES = { critica: "Crítica", alta: "Alta", media: "Media", baja: "Baja
 
 export function pintarIncidentes(incidentes, contenedor, rol) {
     if (!incidentes.length) {
-        contenedor.innerHTML = "<p>No hay incidentes con ese filtro.</p>";
+        const mensaje = document.createElement("p");
+        mensaje.textContent = "No hay incidentes con ese filtro.";
+        contenedor.replaceChildren(mensaje);
         return;
     }
-    contenedor.innerHTML = incidentes.map((incidente) => `
-        <article class="incident-card ${incidente.severidad}">
-            <header>
-                <span>${incidente.id}</span>
-                <span class="badge">${NOMBRES[incidente.severidad] || incidente.severidad}</span>
-            </header>
-            <h3>${incidente.titulo}</h3>
-            <p>${incidente.tipo} · ${incidente.estado}</p>
-            <footer class="card-meta">
-                <time datetime="${incidente.fecha}">${incidente.fecha}</time>
-                ${rol === "supervisor" || rol === "admin" ? `<button type="button" data-estado="${incidente.id}">Cambiar estado</button>` : ""}
-                ${rol === "admin" ? `<button type="button" data-borrar="${incidente.id}">Eliminar</button>` : ""}
-            </footer>
-        </article>
-    `).join("");
+
+    const tarjetas = incidentes.map((incidente) => {
+        const severidad = Object.hasOwn(NOMBRES, incidente.severidad) ? incidente.severidad : "media";
+        const tarjeta = document.createElement("article");
+        tarjeta.className = `incident-card ${severidad}`;
+
+        const encabezado = document.createElement("header");
+        const codigo = document.createElement("span");
+        codigo.textContent = incidente.id;
+        const insignia = document.createElement("span");
+        insignia.className = "badge";
+        insignia.textContent = NOMBRES[incidente.severidad] || incidente.severidad;
+        encabezado.append(codigo, insignia);
+
+        const titulo = document.createElement("h3");
+        titulo.textContent = incidente.titulo;
+        const detalle = document.createElement("p");
+        detalle.textContent = `${incidente.tipo} · ${incidente.estado}`;
+
+        const pie = document.createElement("footer");
+        pie.className = "card-meta";
+        const fecha = document.createElement("time");
+        fecha.dateTime = incidente.fecha;
+        fecha.textContent = incidente.fecha;
+        pie.append(fecha);
+
+        if (rol === "supervisor" || rol === "admin") {
+            const botonEstado = document.createElement("button");
+            botonEstado.type = "button";
+            botonEstado.dataset.estado = incidente.id;
+            botonEstado.textContent = "Cambiar estado";
+            pie.append(botonEstado);
+        }
+        if (rol === "admin") {
+            const botonEliminar = document.createElement("button");
+            botonEliminar.type = "button";
+            botonEliminar.dataset.borrar = incidente.id;
+            botonEliminar.textContent = "Eliminar";
+            pie.append(botonEliminar);
+        }
+
+        tarjeta.append(encabezado, titulo, detalle, pie);
+        return tarjeta;
+    });
+    contenedor.replaceChildren(...tarjetas);
 }
 
 export function pintarResumen(incidentes) {

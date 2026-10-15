@@ -56,6 +56,13 @@ document.querySelector("#cerrar-sesion").addEventListener("click", () => {
     iniciar();
 });
 
+window.addEventListener("sesion-expirada", () => {
+    incidentes = [];
+    lista.replaceChildren();
+    sesionActual.textContent = "Sin sesión";
+    window.location.hash = "caja-login";
+});
+
 filtro.addEventListener("change", () => {
     mostrar(filtrarPorSeveridad(incidentes, filtro.value));
 });
@@ -89,6 +96,7 @@ formulario.addEventListener("submit", async (evento) => {
     }
     try {
         const datos = Object.fromEntries(new FormData(formulario));
+        delete datos.confirmacion;
         await crearIncidente(datos);
         incidentes = await obtenerIncidentes();
         mostrar(incidentes);
