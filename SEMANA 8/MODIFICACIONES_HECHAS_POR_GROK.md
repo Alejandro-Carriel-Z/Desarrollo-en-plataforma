@@ -36,7 +36,7 @@ No se copiaron ni se subieron: `.env`, `certs/`, `node_modules/`, `.venv/`, `.ag
 | `MANUAL_USUARIO.md` | Nuevo | 16.3: tareas por rol, mensajes y solución de problemas |
 | `DESPLIEGUE.md` | Nuevo | Pasos en Railway (y alternativa Render + MySQL externo) |
 | `PRESENTACION.md` | Nuevo | 16.1: contenido de 10 diapositivas |
-| `GUION_VIDEO_DEFENSA.md` | Nuevo | 16.4: guion de ≤ 20 min y preguntas con respuesta |
+| `GUION_VIDEO_DEFENSA.md` | Nuevo (reescrito el 20/10) | 16.4: guion de video de máximo 10 min |
 | `CHECKLIST_EVIDENCIAS.md` | Nuevo | 24 capturas para el PDF de evidencias |
 | `RETROALIMENTACION_Y_LECCIONES.md` | Nuevo | 16.5: retroalimentación clasificada, retrospectiva y lecciones |
 | `MODIFICACIONES_HECHAS_POR_GROK.md` | Nuevo | Este archivo |
@@ -45,3 +45,14 @@ No se copiaron ni se subieron: `.env`, `certs/`, `node_modules/`, `.venv/`, `.ag
 | Archivo | Motivo |
 |---|---|
 | `README.md` (raíz del repo) | Fila nueva para `SEMANA 8/` |
+
+## Segunda ronda (20/10/2026): video de 10 minutos y documentación ampliada
+| Archivo | Cambio | Motivo |
+|---|---|---|
+| `GUION_VIDEO_DEFENSA.md` | Reescrito | Nueva regla del docente: máximo 10 min, repartidos en funcionalidad (2:30), estructura del código (2:30) y seguridad + CRUD por rol (4:30), con lo que se muestra y lo que se dice en cada bloque. Todo el contenido de seguridad se verificó contra el código. Incluye el anexo de preguntas. |
+| `DOCUMENTACION_TECNICA.md` | Ampliado (18 secciones) | Versión y fecha, dos diagramas mermaid (componentes y secuencia login/CRUD), estructura archivo por archivo, modelo Prisma, cada ruta con ejemplos, flujo de autenticación, seguridad con mapeo OWASP Top 10, reglas de validación, logs, health check, variables, comandos, pruebas y resultados, rendimiento, despliegue y reversión, checklist de producción y limitaciones |
+| `MANUAL_USUARIO.md` | Ampliado (17 secciones) | Acceso con los roles demo, permisos, paso a paso para crear, filtrar, ver detalle, cambiar estado, editar y eliminar, significado de estados y severidades, mensajes de error, solución de problemas, FAQ, cierre de sesión y vencimiento. Se corrigió el mínimo de la descripción (20 caracteres) y los nombres reales de los botones |
+| `README.md` (SEMANA 8) | Una línea | Descripción del guion de 10 min |
+| `MODIFICACIONES_HECHAS_POR_GROK.md` | Esta sección | Registro de cambios |
+
+No se modificó código. Según el código, estos controles **no existen** y se documentan como limitaciones: rate limiting en el login, borrado lógico (el DELETE es físico), auditoría de cambios, revocación de tokens, edición completa en la UI (PUT solo por API), selector de estado (el botón solo pasa a "Contención en curso") y una página de detalle con datos en vivo (`detalle.html` es estática).

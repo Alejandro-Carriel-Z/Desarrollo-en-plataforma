@@ -15,7 +15,7 @@ Versión **8.0.0**. Plataforma de gestión de incidentes con CRUD persistente (P
 | `MANUAL_USUARIO.md` | Uso de la plataforma por rol y solución de problemas |
 | `DESPLIEGUE.md` | Pasos exactos para publicar en Railway, verificar, etiquetar y revertir |
 | `PRESENTACION.md` | Contenido de las diapositivas |
-| `GUION_VIDEO_DEFENSA.md` | Guion cronometrado (≤ 20 min) y preguntas probables con respuesta |
+| `GUION_VIDEO_DEFENSA.md` | Guion de 10 min (funcionalidad, código y seguridad a fondo) y anexo de preguntas |
 | `CHECKLIST_EVIDENCIAS.md` | Capturas para el PDF de evidencias |
 | `RETROALIMENTACION_Y_LECCIONES.md` | Retroalimentación clasificada y lecciones (16.5) |
 | `MODIFICACIONES_HECHAS_POR_GROK.md` | Qué archivos se crearon o cambiaron y por qué |

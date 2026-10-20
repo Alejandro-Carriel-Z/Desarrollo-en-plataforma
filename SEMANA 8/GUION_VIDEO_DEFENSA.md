@@ -1,44 +1,106 @@
-# Guion del video de defensa (máximo 20 minutos; objetivo: 17–18)
+# Guion del video de defensa: máximo 10 minutos
 
-**Antes de grabar:** abre la URL pública y verifica `/api/salud` (200, base conectada). Ten a mano las tres cuentas demo, VS Code en `SEMANA 8/`, el panel de Railway (logs y variables con los valores **ocultos**) y una terminal. Ten también un **plan B**: si la URL falla, `docker compose up` local o `npm start`, y explica el diagnóstico sin ocultarlo (16.4). Graba con OBS o con la grabación de Teams, con tu cámara visible en una esquina.
+**Versión:** 8.0.0 · **Fecha:** 20/10/2026 · **Duración objetivo:** 9:30, con 30 s de margen.
 
-| Tiempo | Sección (punto del PDF) | Qué mostrar | Qué decir (resumen) |
-|---|---|---|---|
-| 0:00–1:00 | Presentación | Portada | Nombre, materia, proyecto y versión 8.0.0 con su commit |
-| 1:00–2:30 | Problema y usuario (16.1) | Diapositivas 2–3 | El problema del SOC, los tres roles y qué resuelve la plataforma |
-| 2:30–5:00 | Arquitectura (16.1, 16.4) | Diagrama y carpetas en VS Code | Cliente → proxy TLS → Express → middleware → controlador → validación → modelo → Prisma → MySQL. Por qué MVC: separa responsabilidades y facilita probar |
-| 5:00–10:00 | Demostración del flujo (16.1, 16.2) | URL en vivo | 1) Login inválido: *Credenciales inválidas*. 2) Login como analista. 3) Crear un incidente; probar antes un dato inválido (400). 4) Consultar el detalle. 5) Como analista intentar eliminar: 403 (la API rechaza aunque se envíe a mano; muéstralo en DevTools o con curl sin token: 401). 6) Supervisor cambia el estado. 7) Admin elimina. 8) **Restart** del servicio en Railway y recargar: los datos persisten |
-| 10:00–12:30 | Seguridad (16.2, 16.4) | `rol.js`, `token.js`, `hash.js`, `validation/`, cabeceras en DevTools | bcrypt, JWT con vencimiento, rol en el servidor, allowlist, CSP y HSTS, `/.env` da 404, variables en el panel (solo los nombres) |
-| 12:30–14:30 | Pruebas (16.2) | `npm run verificar` y `npm run smoke` con BASE_URL | Unitarias, integración HTTP y smoke en producción: qué cubre cada una y el resultado |
-| 14:30–16:00 | Despliegue y monitoreo (15, 16.3) | Railway: Deploy Logs, `/api/salud`, un log con requestId | Variables por entorno, migraciones automáticas, health check, logs con nivel y sin secretos, reversión |
-| 16:00–17:00 | Documentación (16.3) | README, DOCUMENTACION_TECNICA, MANUAL_USUARIO | Cómo instalar, configurar, probar y usar, con fecha y versión |
-| 17:00–18:30 | Limitaciones, retroalimentación y lecciones (16.5) | Diapositivas 9–10 | Limitaciones honestas con su mejora, la retroalimentación recibida y qué cambiaste, y tres lecciones concretas |
-| 18:30–19:00 | Cierre | URL y repositorio | Versión etiquetada `v8.0.0`; las credenciales demo se rotan después de la evaluación |
+Estructura que pidió el docente: **funcionalidad (2:30)**, **estructura del código (2:30)** y **seguridad y CRUD a fondo (4:30)**, que es la parte más importante.
 
-## Preguntas probables y respuestas
+## Preparación (antes de grabar)
+- Abre `https://<url>/api/salud` y confirma que da 200 y `base: conectada`. Plan B: correr `npm start` en local.
+- Abre dos ventanas del navegador: una con sesión de **analista** y otra con sesión de **admin**. Ten la cuenta de supervisor lista.
+- En VS Code, deja abiertas estas pestañas en orden: `src/app.js`, `src/security/rol.js`, `src/security/token.js`, `src/security/hash.js`, `src/routes/incidentes.routes.js`, `src/validation/incidentes.js`, `src/models/incidentes.model.js`, `public/js/vista.js`, `src/middleware/logger.js`, `src/middleware/errorHandler.js`, `src/config/env.js`, `.gitignore`.
+- Ten una terminal en `SEMANA 8/` con `npm test` listo para ejecutar.
+- No muestres `.env`, tokens completos ni los valores de las variables en Railway.
 
-**Arquitectura**
-- *¿Por qué Express + Prisma + MySQL?* Express es ligero y bien conocido; Prisma da tipos, migraciones versionadas y consultas parametrizadas que evitan la inyección SQL; MySQL es relacional y sirve para entidades con reglas y unicidad, como el código del incidente.
-- *¿Dónde está el MVC?* En el cliente: `modelo.js` (API y sesión), `vista.js` (DOM) y `controlador.js` (eventos). En el servidor: rutas y controladores, validación y modelo Prisma.
-- *¿Por qué separaste `app.js` de `server.js`?* Así puedo probar la app con supertest sin abrir puertos, y el arranque (HTTPS o HTTP, apagado ordenado) queda aislado.
-- *¿Cómo escalaría?* La API no guarda estado (JWT), así que se pueden agregar réplicas detrás del proxy. El cuello de botella sería la base: índices, pool de conexiones y réplicas de lectura.
+## Tabla de tiempos
+| Tiempo | Bloque | En pantalla |
+|---|---|---|
+| 0:00–0:20 | Intro | Portada / URL |
+| 0:20–2:50 | **1. Funcionalidad (demo)** | Navegador con la URL pública |
+| 2:50–5:20 | **2. Estructura del código** | VS Code, árbol de carpetas y diagrama |
+| 5:20–9:50 | **3. Seguridad + CRUD por rol** | VS Code, DevTools y terminal |
+| 9:50–10:00 | Cierre | URL y repositorio |
 
-**Seguridad**
-- *¿Cómo guardas las contraseñas?* Con un hash bcrypt con sal; nunca en texto plano y nunca se devuelve el hash.
-- *¿Qué pasa si alguien manda un DELETE a mano siendo analista?* `exigirRol` en el servidor devuelve 403. La interfaz solo oculta botones; la seguridad está en la API.
-- *¿Y si roban un token?* Sirve como máximo 2 horas y deja de servir si el usuario se desactiva. Mejora: cookie HttpOnly, refresh token y revocación.
-- *¿HTTPS en producción?* El proxy de Railway termina TLS con un certificado válido. La app confía en `X-Forwarded-Proto`, redirige HTTP a HTTPS y envía HSTS. En local uso un certificado autofirmado.
-- *¿Dónde están los secretos?* En `.env` local, que está ignorado por Git, y en el panel de Railway. El repositorio solo tiene `.env.example` con marcadores. Al arrancar, la app valida las variables y se detiene si falta una.
-- *¿XSS o inyección?* Uso `textContent` en lugar de `innerHTML`, CSP, allowlist de campos y consultas parametrizadas de Prisma.
-- *¿Qué no registran los logs?* Cuerpos, contraseñas, tokens ni el encabezado Authorization; esos campos se reemplazan por `[OCULTO]`.
+---
 
-**Pruebas**
-- *¿Qué cubren las pruebas?* Validación (límites, tipos y campos prohibidos), modelo (IDs raros, códigos únicos en transacción) e integración HTTP (200, 201, 400, 401, 403, 404 y 503, rutas sensibles y cabeceras).
-- *¿Por qué con base simulada?* Para que sean rápidas y repetibles sin MySQL. La persistencia real la verifico con el smoke test y el reinicio en producción. Mejora: e2e con MySQL en CI.
-- *¿Alguna prueba evitó un error?* Sí: la de creación transaccional detectó que se podían repetir códigos `INC-###`, y la del ID decimal evitó un error 500.
+## 0:00–0:20 · Intro
+**Decir:** "Hola, soy Alejandro Carriel. Les presento SecureGuard, una plataforma para que un equipo SOC registre y dé seguimiento a incidentes de seguridad. Está desplegada en esta URL y el código está en GitHub, en la carpeta Semana 8, versión 8.0.0."
 
-**Despliegue y limitaciones**
-- *¿Por qué Railway?* Tiene MySQL administrado en el mismo proyecto, despliega desde GitHub con Docker, da HTTPS automático y health checks.
-- *¿Cómo reviertes un despliegue fallido?* Con Redeploy del último despliegue estable o `git revert`. Las migraciones son aditivas y respaldo antes con mysqldump.
-- *¿Qué le falta para producción real?* Rate limiting, MFA, auditoría, respaldos automáticos probados, monitoreo con alertas, pentest y cumplimiento de la LOPDP.
-- *¿Qué pasa si el health check da 200 pero el login falla?* Por eso la salud consulta la base y además corro el smoke test y el recorrido manual (punto 15.5).
+## 0:20–2:50 · 1. Funcionalidad
+| Min | Mostrar | Decir |
+|---|---|---|
+| 0:20 | Login con una clave mala | "Primero pruebo una clave incorrecta: el sistema solo dice *credenciales inválidas* y no revela si el correo existe." |
+| 0:40 | Login como analista | "Entro como analista. Arriba se ve mi nombre y mi rol, y se cargan los incidentes desde MySQL." |
+| 1:00 | Formulario con un título de 3 letras | "Si escribo un título demasiado corto, el formulario me avisa; y aunque alguien se salte el navegador, el servidor también lo rechaza." |
+| 1:20 | Crear un incidente válido | "Lo registro bien y aparece con el código INC con número, que asigna el servidor." |
+| 1:40 | Filtro por severidad | "Puedo filtrar por severidad." |
+| 1:55 | Sesión de supervisor → **Cambiar estado** | "Como supervisor solo veo el botón de cambiar estado: el incidente pasa a *Contención en curso*." |
+| 2:15 | Sesión de admin → **Eliminar** | "El admin además puede eliminar." |
+| 2:30 | Railway → Restart y recargar | "Reinicio el servicio y los datos siguen ahí: la persistencia es real." |
+
+## 2:50–5:20 · 2. Estructura del código
+| Min | Mostrar | Decir |
+|---|---|---|
+| 2:50 | Diagrama mermaid de `DOCUMENTACION_TECNICA.md` | "La arquitectura es cliente, API y base de datos. El navegador habla por HTTPS con el proxy de Railway; este pasa la petición a Express, que usa Prisma para hablar con MySQL." |
+| 3:20 | Árbol `public/js` | "En el cliente apliqué MVC: `modelo.js` hace las llamadas a la API y guarda la sesión, `vista.js` pinta el DOM y `controlador.js` maneja los eventos." |
+| 3:50 | `server.js` y `src/app.js` | "`server.js` solo arranca: valida el entorno y levanta HTTPS en local o HTTP detrás del proxy. `app.js` arma la cadena de middleware y la separé para poder probarla con supertest." |
+| 4:20 | `routes` → `controllers` → `validation` → `models` | "Cada petición pasa por la ruta, que aplica token y rol; luego por el controlador, que maneja HTTP; luego por la validación; y al final por el modelo, que es el único que toca la base." |
+| 4:50 | `prisma/schema.prisma` y las migraciones | "Hay dos tablas, Incidente y Usuario, con migraciones versionadas. En producción se aplican con `migrate deploy` al arrancar." |
+
+## 5:20–9:50 · 3. Seguridad (lo más importante)
+
+### 5:20 · Autenticación: contraseñas y JWT (45 s)
+**Mostrar:** `hash.js`, `auth.controller.js` y `token.js`.
+**Decir:** "Las contraseñas se guardan con **bcrypt, costo 10**, que lleva sal y es lento a propósito; en la base nunca hay texto plano y el login nunca devuelve el hash. Para validar uso `bcrypt.compare`. Si el correo no existe, el usuario está inactivo o la clave es incorrecta, la respuesta es la misma: 401 *credenciales inválidas*, para no dar pistas. Si todo está bien, firmo un **JWT HS256** con el id y el rol, con vencimiento de **2 horas**. El secreto tiene que ser de **64 caracteres hexadecimales**, o sea 256 bits; si no cumple, el servidor ni siquiera arranca."
+
+### 6:05 · Autorización por rol: 401 frente a 403 (60 s)
+**Mostrar:** `rol.js`, `incidentes.routes.js` y luego DevTools o curl.
+**Decir:** "`exigirToken` revisa la cabecera Bearer: si no viene token, devuelve **401** *token ausente*; si la firma o la fecha fallan, **401** *inválido o vencido*. Además consulta en la base que el usuario siga **activo**, así que desactivar a alguien corta su acceso aunque tenga un token vigente. Después `exigirRol` compara el rol; si no alcanza, devuelve **403** *permiso insuficiente*. En resumen: 401 es *no sé quién eres* y 403 es *sé quién eres, pero no puedes*."
+
+**CRUD por rol (mostrar la tabla):**
+| Operación | Ruta | analista | supervisor | admin |
+|---|---|:-:|:-:|:-:|
+| Listar / filtrar | `GET /api/incidentes` | ✔ | ✔ | ✔ |
+| Ver uno | `GET /api/incidentes/:id` | ✔ | ✔ | ✔ |
+| Crear | `POST /api/incidentes` | ✔ | 403 | ✔ |
+| Cambiar estado | `PATCH /api/incidentes/:id` | 403 | ✔ | ✔ |
+| Reemplazar | `PUT /api/incidentes/:id` | 403 | 403 | ✔ |
+| Eliminar | `DELETE /api/incidentes/:id` | 403 | 403 | ✔ |
+
+**Demo:** "Como analista mando un DELETE a mano desde la consola y recibo 403. La interfaz oculta el botón, pero la seguridad real está en el servidor. Y sin token recibo 401."
+
+### 7:05 · Validación y allowlist (35 s)
+**Mostrar:** `validation/incidentes.js`.
+**Decir:** "Cada operación tiene su lista de campos permitidos. En POST solo se aceptan título, descripción, severidad, prioridad, tipo, fecha, correo y reportante; cualquier otro, como `id`, `codigo` o `rol`, da 400, y eso evita la asignación masiva. PATCH solo acepta `estado`. PUT exige los siete campos editables. Las reglas son: título de 5 a 100 caracteres, descripción de 20 a 500, severidad de una lista cerrada, fecha AAAA-MM-DD real y no futura, correo con formato y estado de una lista. El cuerpo tiene que ser un objeto JSON y no puede pasar de 20 kb."
+
+### 7:40 · Inyección SQL, XSS y exposición de archivos (35 s)
+**Mostrar:** `incidentes.model.js` y `vista.js`; luego `/.env` en el navegador.
+**Decir:** "Contra **inyección SQL**, nunca concateno SQL: Prisma manda consultas parametrizadas, y el único SQL a mano es el `SELECT 1` del health check, sin datos del usuario. Contra **XSS**, la vista crea los elementos y usa `textContent`, nunca `innerHTML` con datos, y además hay CSP. Express solo publica la carpeta `public/`, así que `/.env`, `/certs/key.pem`, `/server.js` y `/package.json` dan 404."
+
+### 8:15 · HTTPS, cabeceras y CORS (30 s)
+**Mostrar:** DevTools → Network → cabeceras de respuesta.
+**Decir:** "En local uso un certificado **autofirmado** que genera `selfsigned`. En producción el TLS lo termina el proxy de Railway con un certificado válido; la app confía en el proxy y **redirige HTTP a HTTPS con un 301**. Las cabeceras de seguridad son HSTS, CSP, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` contra clickjacking y `Referrer-Policy`, y quité `X-Powered-By`. CORS solo permite los orígenes de la lista, los métodos del CRUD y las cabeceras Content-Type y Authorization."
+
+### 8:45 · Secretos, logs y errores (35 s)
+**Mostrar:** `config/env.js`, `.gitignore`, `logger.js` y un log de Railway.
+**Decir:** "La configuración sale de variables de entorno: si falta `DATABASE_URL` o `JWT_SECRET`, la app se detiene antes de recibir tráfico (fail-fast). `.env`, los certificados y las llaves están en `.gitignore`; el repositorio solo tiene `.env.example` con marcadores. Los logs son JSON con nivel, ruta, código, duración y un **requestId** que también viaja en la cabecera `X-Request-Id`, así puedo cruzar el error que ve el usuario con el log. No registro cuerpos, y los campos password, token, authorization, secret y cookie salen como `[OCULTO]`. El manejador de errores **nunca devuelve el stack**; en producción un 500 solo dice *error interno* más el requestId."
+
+### 9:20 · Integridad, pruebas y límites (30 s)
+**Mostrar:** `crear` en el modelo y luego `npm test` en verde.
+**Decir:** "Las pruebas detectaron que con altas simultáneas se repetían los códigos INC. Lo arreglé creando el registro y asignando el código a partir del id **dentro de una transacción**, y el campo `codigo` es único en la base. Hay 53 pruebas: validación, IDs maliciosos como `1e309`, y pruebas HTTP de 401, 403, 400, 404, JSON mal formado, rutas sensibles, cabeceras y logs sin secretos. Limitaciones que reconozco: **no hay límite de intentos de login**, el borrado es **físico** y no lógico, y **no hay auditoría** de quién cambió qué. Son las siguientes mejoras."
+
+## 9:50–10:00 · Cierre
+**Decir:** "Eso es SecureGuard: un CRUD persistente con autenticación, roles, validación y HTTPS, desplegado y monitoreado. Gracias."
+
+---
+
+## Anexo: preguntas probables (respuestas cortas)
+- **¿Por qué bcrypt y no SHA-256?** SHA es rápido y facilita la fuerza bruta. bcrypt es lento, lleva sal y su costo se puede ajustar.
+- **¿Dónde se guarda el token?** En `sessionStorage`, así que se borra al cerrar la pestaña. Es vulnerable si hubiera XSS; lo mitigo con textContent y CSP. La mejora sería una cookie HttpOnly.
+- **¿Cómo se invalida un token?** Vence a las 2 h, o se desactiva al usuario (se revisa en cada petición). Cerrar sesión borra el token del navegador, pero no lo revoca en el servidor.
+- **¿Qué pasa si cambias `JWT_SECRET`?** Todos los tokens quedan inválidos; sirve para rotar después de la evaluación.
+- **¿El borrado deja rastro?** No, es un `DELETE` físico y solo lo hace el admin. La mejora sería un estado *Cerrado* o un `deletedAt`, más una tabla de auditoría.
+- **¿Protección contra fuerza bruta?** No hay rate limiting. Agregaría `express-rate-limit` en `/api/auth/login`.
+- **¿Por qué 401 y no 404 sin token?** Primero se autentica y después se busca el recurso, así no se filtra si un ID existe.
+- **¿Qué cubre el health check?** El proceso y la base (`SELECT 1`). Da 503 si la base cae y Railway lo usa para decidir si la instancia recibe tráfico.
+- **¿Por qué las pruebas usan una base simulada?** Para que sean rápidas y repetibles. La integración real se prueba con el smoke test y el reinicio en producción.
+- **¿Cómo reviertes un despliegue?** Con Redeploy del despliegue estable en Railway o con `git revert`. Las migraciones son aditivas.
