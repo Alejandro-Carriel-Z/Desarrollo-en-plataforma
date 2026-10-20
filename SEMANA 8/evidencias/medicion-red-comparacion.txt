@@ -1,0 +1,32 @@
+Comparacion de red: GET /css/estilos.css
+Fecha de medicion: 2026-10-19
+
+Metodo
+- Mismo servidor local HTTPS, endpoint, hoja CSS y contenido.
+- Diez solicitudes por modalidad; dos solicitudes de calentamiento descartadas.
+- Cache-Control: no-cache; conexion keep-alive.
+- La modalidad identidad envia Accept-Encoding: identity.
+- La modalidad comprimida envia Accept-Encoding: gzip.
+- Se verifica HTTP 200 y que el cuerpo descomprimido coincide byte por byte
+  con el archivo local; el hash SHA-256 tambien coincide en cada muestra.
+- Bytes contados: cuerpo de respuesta HTTP. No incluyen encabezados HTTP ni
+  framing de transporte.
+
+Resultado
+Modalidad      Codificacion  Bytes cuerpo  Mediana     Promedio
+Antes/control  identity      7 364         1,694 ms    1,700 ms
+Despues        gzip          1 959         2,270 ms    2,450 ms
+
+Diferencia
+- Bytes evitados: 5 405 (reduccion de 73,4 %).
+- Mediana de tiempo: +0,576 ms (+34,0 %).
+- Contenido semantico: identico (SHA-256 igual).
+
+Interpretacion y limites
+La compresion mejora de forma medible el volumen del cuerpo transmitido, pero
+en esta prueba local la mediana de respuesta aumenta, probablemente por el
+costo de compresion y la variabilidad de una muestra pequena. No se presenta
+como una mejora de latencia. Una red real puede cambiar el balance entre CPU
+y transferencia. La prueba mide una hoja CSS local, no trafico de produccion.
+Los resultados individuales y el contexto de cada muestra estan en
+medicion-red-antes.json y medicion-red-despues.json.

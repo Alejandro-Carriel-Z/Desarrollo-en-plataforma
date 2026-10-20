@@ -1,0 +1,35 @@
+# Entorno completo local tipo producción: app + MySQL.
+# Uso: crea .env con MYSQL_ROOT_PASSWORD, JWT_SECRET y SEED_*_PASSWORD; luego
+#   docker compose up -d --build
+#   docker compose exec app npm run seed
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?define MYSQL_ROOT_PASSWORD en .env}
+      MYSQL_DATABASE: secureguard
+    volumes:
+      - datos-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      retries: 10
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HTTPS_ENABLED: "false"
+      TRUST_PROXY: "false"
+      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@db:3306/secureguard
+      JWT_SECRET: ${JWT_SECRET:?define JWT_SECRET en .env}
+      SEED_ANALISTA_PASSWORD: ${SEED_ANALISTA_PASSWORD:-}
+      SEED_SUPERVISOR_PASSWORD: ${SEED_SUPERVISOR_PASSWORD:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+    ports:
+      - "8080:3000"
+volumes:
+  datos-mysql:

@@ -1,0 +1,92 @@
+{
+  "fecha": "2026-10-19T23:55:55.309Z",
+  "endpoint": "GET /css/estilos.css",
+  "modo": "antes-compresion",
+  "cache": "no-cache; dos calentamientos descartados; sin navegador ni base de datos",
+  "calentamientosDescartados": 2,
+  "muestras": [
+    {
+      "estado": 200,
+      "duracionMs": 1.681,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 1.765,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 2.185,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 1.718,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 1.537,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 1.415,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 1.707,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 2.293,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 1.325,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 1.37,
+      "bytesCuerpoTransferidos": 7364,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "identity",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    }
+  ],
+  "bytesCuerpoOriginal": 7364,
+  "medianaMs": 1.694,
+  "promedioMs": 1.7
+}

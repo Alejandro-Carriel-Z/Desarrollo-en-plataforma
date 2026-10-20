@@ -1,0 +1,43 @@
+{
+  "name": "secureguard-unidad8",
+  "version": "8.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "description": "SecureGuard: plataforma de incidentes desplegable (Unidad 8) con CRUD persistente, JWT, roles, validación, HTTPS, configuración por entorno, logs y health check",
+  "scripts": {
+    "start": "node server.js",
+    "start:prod": "prisma migrate deploy --config prisma7.config.ts && node server.js",
+    "cert": "node crear-cert.js",
+    "migrate": "prisma migrate dev --config prisma7.config.ts",
+    "migrate:deploy": "prisma migrate deploy --config prisma7.config.ts",
+    "generate": "prisma generate --config prisma7.config.ts",
+    "seed": "node src/seed.js",
+    "test": "jest --runInBand",
+    "lint": "eslint .",
+    "medir:red": "node scripts/medir-red.js",
+    "postinstall": "prisma generate --config prisma7.config.ts",
+    "verificar": "npm run lint && npm test",
+    "smoke": "node scripts/smoke.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-mariadb": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "selfsigned": "^5.5.0",
+    "prisma": "^7.10.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "jest": "^30.5.2",
+    "supertest": "^7.1.4"
+  }
+}

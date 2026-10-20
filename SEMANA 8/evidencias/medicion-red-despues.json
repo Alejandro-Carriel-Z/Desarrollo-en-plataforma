@@ -1,0 +1,92 @@
+{
+  "fecha": "2026-10-19T23:57:52.979Z",
+  "endpoint": "GET /css/estilos.css",
+  "modo": "despues-compresion",
+  "cache": "no-cache; dos calentamientos descartados; sin navegador ni base de datos",
+  "calentamientosDescartados": 2,
+  "muestras": [
+    {
+      "estado": 200,
+      "duracionMs": 3.113,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 2.605,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 2.15,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 3.371,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 2.188,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 2.334,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 3.287,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 2.206,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 1.706,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    },
+    {
+      "estado": 200,
+      "duracionMs": 1.543,
+      "bytesCuerpoTransferidos": 1959,
+      "bytesCuerpoOriginal": 7364,
+      "codificacion": "gzip",
+      "hashSha256": "dac76562af7690aa0d7f5a679aa1af2e03450f981f4051586c918445ea7315c2"
+    }
+  ],
+  "bytesCuerpoOriginal": 7364,
+  "medianaMs": 2.27,
+  "promedioMs": 2.45
+}

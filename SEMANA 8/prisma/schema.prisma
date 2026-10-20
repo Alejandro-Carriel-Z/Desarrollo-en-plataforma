@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Incidente {
+  id          Int      @id @default(autoincrement())
+  codigo      String   @unique
+  titulo      String
+  descripcion String   @db.Text
+  severidad   String
+  prioridad   String
+  estado      String   @default("En investigación")
+  tipo        String
+  fecha       String
+  reportante  String
+  createdAt   DateTime @default(now())
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  correo    String   @unique
+  password  String
+  rol       String
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

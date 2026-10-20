@@ -1,0 +1,37 @@
+SecureGuard Semana 7 - regresion HTTP contra Express + Prisma/MySQL
+Fecha: 2026-10-15
+Los puertos 3000 (linea base) y 3001 (cambios aplicados) usan la misma base local.
+
+LINEA BASE (puerto 3000, antes del parche)
+GET /api/incidentes/1.5 (autenticado)  -> 404 (control, no era defecto)
+GET /api/incidentes/1e309 (autenticado)-> 500
+POST /api/incidentes (seis paralelos)  -> 500, 201, 500, 500, 500, 500
+Registros temporales creados           -> 1; eliminados tras la prueba
+
+DESPUES (puerto 3001, código parcheado)
+GET /api/salud                         -> 200
+GET /api/incidentes/1.5 (autenticado)  -> 404
+GET /api/incidentes/1e309 (autenticado)-> 404
+POST /api/incidentes (dos paralelos)   -> 201, 201
+Codigos devueltos                      -> distintos
+Limpieza de los dos registros temporales -> completada
+
+La prueba se ejecutó con un usuario académico local de rol autorizado.
+No se guardaron credenciales ni encabezados Authorization en este archivo.
+
+Validacion automatizada:
+npm test -- --runInBand -> 2 suites aprobadas, 11 pruebas aprobadas, exit code 0
+npm run lint            -> 0 errores, exit code 0
+
+EJECUCION FINAL (2026-10-15, despues de reiniciar el servidor actualizado en puerto 3000)
+GET /api/salud                         -> 200
+POST /api/auth/login                   -> 200 (token no incluido en evidencia)
+GET /api/incidentes/1e309 (autenticado)-> 404
+POST /api/incidentes (dos solicitudes simultaneas) -> 201, 201
+Codigos devueltos                      -> INC-015, INC-016 (distintos)
+DELETE de los dos registros temporales -> 200, 200
+Verificacion posterior de limpieza     -> no quedan registros temporales
+Capturas de DevTools Network           -> devtools-get-id-1e309-404.png
+                                        -> devtools-post-concurrentes-201.png
+                                        -> devtools-get-404-post-concurrentes-201.png (vista conjunta)
+Los valores Authorization y JWT no se muestran en las capturas ni en este archivo.

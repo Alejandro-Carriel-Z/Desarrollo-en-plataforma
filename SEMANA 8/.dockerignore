@@ -1,0 +1,16 @@
+node_modules
+.env
+certs
+*.pem
+*.key
+logs
+.venv
+.agents
+.claude
+.windsurf
+.github
+skills-lock.json
+evidencias
+*.zip
+*.pdf
+coverage
