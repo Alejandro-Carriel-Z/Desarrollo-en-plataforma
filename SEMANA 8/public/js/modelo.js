@@ -22,7 +22,13 @@ async function pedir(ruta, opciones = {}) {
     if (respuesta.status === 403) {
         throw new Error("No tienes permisos para realizar esta acción con tu rol.");
     }
-    if (!respuesta.ok) throw new Error(cuerpo.mensaje || "Error de la API");
+    if (respuesta.status === 429) {
+        throw new Error(cuerpo.mensaje || "Demasiados intentos. Espera unos minutos.");
+    }
+    if (!respuesta.ok) {
+        const detalle = cuerpo.detalles ? ` (${Object.values(cuerpo.detalles).join(" ")})` : "";
+        throw new Error((cuerpo.mensaje || "Error de la API") + detalle);
+    }
     return cuerpo;
 }
 
@@ -68,3 +74,14 @@ export function cambiarEstado(id, estado) {
 export function eliminarIncidente(id) {
     return pedir(`/incidentes/${id}`, { method: "DELETE" });
 }
+
+export function obtenerIncidente(id) {
+    return pedir(`/incidentes/${encodeURIComponent(id)}`).then((cuerpo) => cuerpo.datos);
+}
+
+export function reemplazarIncidente(id, datos) {
+    return pedir(`/incidentes/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(datos) });
+}
+
+// Estados que se pueden elegir en el selector. "Cerrado" solo se alcanza con "Cerrar" (DELETE lógico).
+export const ESTADOS_SELECCIONABLES = ["En investigación", "Contención en curso", "Resuelto"];

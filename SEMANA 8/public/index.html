@@ -28,7 +28,7 @@
         <ul>
             <li><a href="#listado-incidentes">Incidentes</a></li>
             <li><a href="#registro-incidente">Registrar</a></li>
-            <li><a href="detalle.html">Caso destacado</a></li>
+            <li><a href="#edicion-incidente">Editar</a></li>
         </ul>
     </nav>
 
@@ -157,6 +157,58 @@
                 </form>
             </section>
 
+
+            <section id="edicion-incidente" class="content-section form-section" hidden>
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">SOLO ADMINISTRADOR</p>
+                        <h2>Editar incidente <span id="edit-codigo"></span></h2>
+                    </div>
+                    <span class="required-note">PUT: se reemplazan todos los campos</span>
+                </div>
+                <form id="formulario-edicion">
+                    <div class="form-grid">
+                        <div class="campo campo-wide">
+                            <label for="edit-titulo">Título</label>
+                            <input type="text" id="edit-titulo" name="titulo" required minlength="5" maxlength="100">
+                        </div>
+                        <div class="campo campo-wide">
+                            <label for="edit-descripcion">Descripción</label>
+                            <textarea id="edit-descripcion" name="descripcion" rows="4" required minlength="20" maxlength="500"></textarea>
+                        </div>
+                        <div class="campo">
+                            <label for="edit-severidad">Severidad</label>
+                            <select id="edit-severidad" name="severidad" required>
+                                <option value="critica">Crítica</option><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="edit-prioridad">Prioridad</label>
+                            <select id="edit-prioridad" name="prioridad" required>
+                                <option value="critica">Crítica</option><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="edit-estado">Estado</label>
+                            <select id="edit-estado" name="estado" required>
+                                <option>En investigación</option><option>Contención en curso</option><option>Resuelto</option><option>Cerrado</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="edit-tipo">Tipo</label>
+                            <select id="edit-tipo" name="tipo" required>
+                                <option value="phishing">Phishing</option><option value="malware">Malware</option><option value="acceso">Acceso no autorizado</option><option value="vulnerabilidad">Vulnerabilidad</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="edit-fecha">Fecha</label>
+                            <input type="date" id="edit-fecha" name="fecha" required>
+                        </div>
+                    </div>
+                    <button class="button button-primary" type="submit">Guardar cambios</button>
+                    <button class="button" type="button" id="cancelar-edicion">Cancelar</button>
+                </form>
+            </section>
             <aside class="insight-panel">
                 <p class="eyebrow">GUÍA SOC</p>
                 <h2>Primero contiene, después investiga.</h2>

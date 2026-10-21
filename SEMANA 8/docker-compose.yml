@@ -1,17 +1,18 @@
-# Entorno completo local tipo producción: app + MySQL.
-# Uso: crea .env con MYSQL_ROOT_PASSWORD, JWT_SECRET y SEED_*_PASSWORD; luego
+# Entorno completo local tipo producción: app + PostgreSQL 16.
+# Uso: crea .env con POSTGRES_PASSWORD, JWT_SECRET y SEED_*_PASSWORD; luego
 #   docker compose up -d --build
-#   docker compose exec app npm run seed
+# (el seed corre solo al arrancar si las SEED_* están definidas)
 services:
   db:
-    image: mysql:8.4
+    image: postgres:16
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?define MYSQL_ROOT_PASSWORD en .env}
-      MYSQL_DATABASE: secureguard
+      POSTGRES_USER: secureguard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD en .env}
+      POSTGRES_DB: secureguard
     volumes:
-      - datos-mysql:/var/lib/mysql
+      - datos-postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD-SHELL", "pg_isready -U secureguard -d secureguard"]
       interval: 10s
       retries: 10
   app:
@@ -24,12 +25,13 @@ services:
       PORT: 3000
       HTTPS_ENABLED: "false"
       TRUST_PROXY: "false"
-      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@db:3306/secureguard
+      DATABASE_URL: postgresql://secureguard:${POSTGRES_PASSWORD}@db:5432/secureguard
       JWT_SECRET: ${JWT_SECRET:?define JWT_SECRET en .env}
+      CORS_ORIGINS: http://localhost:8080
       SEED_ANALISTA_PASSWORD: ${SEED_ANALISTA_PASSWORD:-}
       SEED_SUPERVISOR_PASSWORD: ${SEED_SUPERVISOR_PASSWORD:-}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
     ports:
       - "8080:3000"
 volumes:
-  datos-mysql:
+  datos-postgres:

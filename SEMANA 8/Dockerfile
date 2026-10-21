@@ -9,5 +9,5 @@ RUN npm ci --omit=dev
 COPY . .
 USER node
 EXPOSE 3000
-# Aplica migraciones pendientes y arranca. El hosting inyecta PORT, DATABASE_URL y JWT_SECRET.
+# Aplica migraciones, ejecuta el seed idempotente y arranca. El hosting inyecta PORT, DATABASE_URL y JWT_SECRET.
 CMD ["npm", "run", "start:prod"]

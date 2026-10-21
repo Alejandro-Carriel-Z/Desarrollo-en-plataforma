@@ -5,10 +5,10 @@
 | Proyecto | SecureGuard: plataforma de gestión de incidentes de seguridad |
 | Autor | Alejandro David Carriel Zambrano · PUCE · Desarrollo en Plataformas |
 | Versión | **8.0.0** (etiqueta sugerida `v8.0.0`) |
-| Fecha | 20 de octubre de 2026 |
+| Fecha | 20 de octubre de 2026 (tercera revisión: PostgreSQL + Render) |
 | Repositorio | https://github.com/Alejandro-Carriel-Z/Desarrollo-en-plataforma, carpeta `SEMANA 8/` |
-| URL de producción | `https://<tu-servicio>.up.railway.app` (se completa al desplegar) |
-| Stack | Node.js ≥ 20 (imagen Node 22), Express 4, Prisma 7 + `@prisma/adapter-mariadb`, MySQL 8, jsonwebtoken, bcryptjs, selfsigned, compression, cors, dotenv, Jest 30, supertest, ESLint 10 |
+| URL de producción | `https://secureguard.onrender.com` (se confirma al desplegar) |
+| Stack | Node.js ≥ 20 (imagen Node 22), Express 4, Prisma 7 + `@prisma/adapter-pg` + `pg`, PostgreSQL 16, express-rate-limit, jsonwebtoken, bcryptjs, selfsigned, compression, cors, dotenv, Jest 30, supertest, ESLint 10 |
 
 ## Índice
 1. Problema y usuarios · 2. Requisitos cubiertos · 3. Arquitectura · 4. Estructura archivo por archivo · 5. Modelo de datos · 6. API · 7. Flujo de autenticación · 8. Seguridad (OWASP Top 10) · 9. Reglas de validación · 10. Logs y monitoreo · 11. Health check · 12. Variables de entorno · 13. Comandos · 14. Pruebas · 15. Rendimiento · 16. Despliegue y reversión · 17. Checklist de producción · 18. Limitaciones y trabajo futuro
@@ -27,13 +27,13 @@ Un SOC académico registraba incidentes en hojas de cálculo y correos: no habí
 ## 2. Requisitos cubiertos (Reto 4)
 | Requisito | Implementación | Evidencia |
 |---|---|---|
-| CRUD persistente | Prisma + MySQL, `src/models/incidentes.model.js` | Crear, reiniciar y volver a consultar |
+| CRUD persistente | Prisma + PostgreSQL, borrado lógico, `src/models/incidentes.model.js` | Crear, reiniciar y volver a consultar |
 | Autenticación | `POST /api/auth/login`, bcrypt + JWT | Login 200 / 401 |
 | Autorización | `exigirToken` + `exigirRol` | 401 / 403 |
 | Validación | `src/validation/incidentes.js` (allowlist) | 400 con detalle |
 | HTTPS | Autofirmado en local; proxy TLS y redirección 301 en producción | Candado del navegador, `curl -I` |
 | Configuración por entorno | `src/config/env.js`, `.env.example` | Falla clara si falta una variable |
-| Logs | `src/middleware/logger.js`, JSON con requestId | Logs de Railway |
+| Logs | `src/middleware/logger.js`, JSON con requestId | Logs de Render |
 | Health check | `GET /api/salud` con la base | 200 / 503 |
 | Pruebas finales | Jest + supertest, ESLint, `scripts/smoke.js` | 53/53, 0 errores, smoke OK |
 
@@ -43,23 +43,23 @@ El patrón es MVC en el cliente (modelo, vista y controlador en `public/js`) y p
 ### 3.1 Componentes
 ```mermaid
 flowchart LR
-    U[Navegador<br/>index.html + JS MVC] -- HTTPS --> P[Proxy TLS<br/>Railway]
+    U[Navegador<br/>index.html + JS MVC] -- HTTPS --> P[Proxy TLS<br/>Render]
     P -- HTTP interno<br/>X-Forwarded-Proto --> S[server.js]
     S --> A[src/app.js]
     subgraph Express
       A --> H1[Cabeceras de seguridad] --> H2[Redirección HTTPS] --> H3[CORS] --> H4[Logger + requestId] --> H5[express.json 20kb] --> H6[compression] --> H7[static public/]
       H7 --> R0[/api/salud · /api/listo/]
-      H7 --> R1[/api/auth/login/]
+      H7 --> RL[express-rate-limit<br/>5 fallos / 15 min] --> R1[/api/auth/login/]
       H7 --> R2[/api/incidentes/]
       R2 --> T[exigirToken] --> RO[exigirRol] --> C[controlador] --> V[validación] --> M[modelo]
       R1 --> AC[auth.controller<br/>bcrypt + JWT]
       A --> E[noEncontrado + errorHandler]
     end
-    M --> PR[Prisma Client<br/>adaptador MariaDB]
+    M --> PR[Prisma Client<br/>adaptador pg]
     AC --> PR
     T --> PR
     R0 --> PR
-    PR --> DB[(MySQL 8<br/>Incidente · Usuario)]
+    PR --> DB[(PostgreSQL 16<br/>Incidente · Usuario)]
     H4 --> L[[stdout JSON<br/>logs/app.log opcional]]
 ```
 
@@ -69,9 +69,10 @@ sequenceDiagram
     actor U as Usuario
     participant W as Navegador (modelo.js)
     participant A as API Express
-    participant DB as MySQL
+    participant DB as PostgreSQL
     U->>W: correo + contraseña
     W->>A: POST /api/auth/login
+    A->>A: rate limit (429 al 6.º fallo)
     A->>DB: usuario.findUnique(correo)
     DB-->>A: usuario (hash bcrypt)
     A->>A: bcrypt.compare + jwt.sign (2 h)
@@ -86,7 +87,11 @@ sequenceDiagram
     DB-->>A: incidente
     A-->>W: 201 {datos}
     W->>W: textContent (render seguro)
-    Note over A: sin token → 401 · rol insuficiente → 403 · datos inválidos → 400
+    U->>W: Cerrar (admin)
+    W->>A: DELETE /api/incidentes/INC-### + Bearer
+    A->>DB: update estado=Cerrado, actualizadoPor=admin
+    A-->>W: 200 (o 409 si ya estaba cerrado)
+    Note over A: sin token → 401 · rol insuficiente → 403 · datos inválidos → 400 · login bloqueado → 429
 ```
 
 ### 3.3 Decisiones de diseño
@@ -101,13 +106,13 @@ sequenceDiagram
 | `server.js` | Punto de entrada. Valida el entorno con `validarEntorno()` y termina con `exit(1)` si falla. Elige HTTPS con `certs/` si `HTTPS_ENABLED`, o HTTP en `0.0.0.0` detrás del proxy. Registra el log de inicio (entorno, versión y commit) y hace un apagado ordenado con SIGTERM/SIGINT, cerrando Prisma. Registra las promesas no manejadas. |
 | `src/app.js` | Construye la app: `x-powered-by` desactivado, `trust proxy`, cabeceras de seguridad, redirección 301 a HTTPS, CORS, logger, `express.json({limit:"20kb"})`, compresión gzip mayor a 1 KiB, estáticos de `public/`, `/api/salud`, `/api/listo`, rutas, 404 y manejador de errores. |
 | `src/config/env.js` | Lee y normaliza `NODE_ENV`, `PORT`, `HTTPS_ENABLED`, `TRUST_PROXY`, `CORS_ORIGINS`, `LOG_LEVEL`, `LOG_FILE`, `APP_VERSION` y `COMMIT`. `validarEntorno()` exige `DATABASE_URL` y un `JWT_SECRET` de 64 caracteres hex. |
-| `src/lib/prisma.js` | Cliente Prisma con `PrismaMariaDb`. Interpreta `DATABASE_URL` (host, puerto, usuario, clave, base), con pool de 5 y timeout de 10 s. TLS opcional con `DATABASE_SSL=true`. Lanza un error si falta la URL. |
+| `src/lib/prisma.js` | Cliente Prisma con `PrismaPg` (driver `pg`). Usa `DATABASE_URL` como connectionString, con pool de 5 y timeout de 10 s. TLS opcional con `DATABASE_SSL=true` (URL externa de Render). Lanza un error si falta la URL. |
 | `src/routes/auth.routes.js` | `POST /login` → `login`. |
 | `src/routes/incidentes.routes.js` | CRUD con `exigirRol` por método (ver §6). |
 | `src/controllers/auth.controller.js` | Normaliza el correo (trim y minúsculas), busca el usuario, `coincide()` con bcrypt y responde 401 genérico. Firma el JWT y responde con nombre, correo y rol, sin hash. |
 | `src/controllers/incidentes.controller.js` | `listar` (filtros severidad, prioridad y estado), `obtener`, `crear` (201), `actualizar` (PATCH con `validarParche`, PUT con `validarReemplazo`) y `eliminar`. 404 cuando no existe. Los errores van a `next()`. |
 | `src/validation/incidentes.js` | Allowlists `CAMPOS_CREACION` y `CAMPOS_REEMPLAZO`, listas `SEVERIDADES` y `ESTADOS`, y las funciones `validarCreacion`, `validarParche` y `validarReemplazo` (ver §9). |
-| `src/models/incidentes.model.js` | `aCliente()` expone solo los campos públicos (el id interno no sale; se usa `codigo` como id). `donde()` acepta el código o un id entero positivo seguro. `listar` usa un `select` explícito. `crear` es transaccional. `actualizar` tiene una segunda allowlist. `eliminar` es un DELETE físico. |
+| `src/models/incidentes.model.js` | `aCliente()` expone solo los campos públicos (el id interno no sale; se usa `codigo` como id). `donde()` acepta el código o un id entero positivo seguro. `listar` usa un `select` explícito. `crear` es transaccional. `actualizar` tiene una segunda allowlist. `eliminar` es un **borrado lógico**: pasa a `Cerrado` y guarda `actualizadoPor`; si ya estaba cerrado devuelve `{yaCerrado}` (409). `crear` y `actualizar` registran `actualizadoPor` (correo del usuario). |
 | `src/security/hash.js` | `crearHash` (bcrypt, costo 10) y `coincide`. |
 | `src/security/token.js` | `firmar` (payload `{id, rol}`, HS256, `expiresIn: "2h"`) y `verificar`. |
 | `src/security/rol.js` | `exigirToken` (Bearer, verificación y usuario activo en la base) y `exigirRol(...roles)`. |
@@ -115,19 +120,20 @@ sequenceDiagram
 | `src/middleware/errorHandler.js` | `noEncontrado` (404) y `errorHandler`: JSON mal formado da 400; los 500 se registran y en producción el mensaje es genérico. Nunca envía el stack. |
 | `src/seed.js` | Crea o actualiza tres usuarios demo con hash. En producción las claves salen de `SEED_*_PASSWORD`. |
 | `prisma/schema.prisma` | Modelos `Incidente` y `Usuario`. |
-| `prisma/migrations/` | `20261007040417_init`, `20261007044322_usuarios` y `migration_lock.toml`. |
+| `prisma/migrations/` | `20261021020229_init_postgres` (esquema completo en PostgreSQL) y `migration_lock.toml` (`provider = "postgresql"`). Las migraciones de MySQL se eliminaron. |
 | `prisma7.config.ts` | Rutas del schema y las migraciones; la URL sale de `DATABASE_URL`. |
 | `crear-cert.js` | Genera `certs/key.pem` y `certs/cert.pem` (RSA 2048, 365 días, CN=localhost). No se suben. |
 | `public/index.html` | Panel: login, resumen, filtro, listado y formulario de alta. |
-| `public/detalle.html` | Ficha de ejemplo de un caso destacado (estática). |
+| `public/detalle.html` + `public/js/detalle.js` | Detalle real: lee `?id=` y llama a `GET /api/incidentes/:id`; pinta con `pintarDetalle()` usando textContent. Exige sesión. |
 | `public/js/modelo.js` | `pedir()` hacia `/api` con Bearer; un 401 en incidentes cierra la sesión y lanza el evento `sesion-expirada`; un 403 muestra un mensaje de permisos. Funciones de sesión en `sessionStorage` y de llamadas al CRUD. |
-| `public/js/vista.js` | Pinta las tarjetas con `createElement` y `textContent`. Muestra los botones según el rol (estado para supervisor y admin, eliminar para admin). |
-| `public/js/controlador.js` | Eventos de login, logout, filtro, alta (validación en cliente) y clics de estado y eliminar. |
+| `public/js/vista.js` | Pinta las tarjetas con `createElement` y `textContent`. Según el rol muestra: selector de estado + *Aplicar estado* (supervisor y admin), *Editar* y *Cerrar* (admin). Un caso `Cerrado` se ve atenuado, con el selector y *Cerrar* deshabilitados. Enlace *Ver detalle*. |
+| `public/js/controlador.js` | Eventos de login, logout, filtro, alta (validación en cliente), selector de estado (PATCH), formulario de edición (PUT, admin) y cierre con confirmación (DELETE lógico). |
 | `public/css/estilos.css` | Estilos. |
 | `tests/*.test.js` | Ver §14. |
 | `scripts/smoke.js` | Prueba productiva contra `BASE_URL`. |
 | `scripts/medir-red.js` | Medición identity frente a gzip (ver §15). |
-| `Dockerfile`, `.dockerignore`, `docker-compose.yml`, `railway.json` | Despliegue (ver §16). |
+| `Dockerfile`, `.dockerignore`, `docker-compose.yml` (app + postgres:16) | Contenedores (ver §16). |
+| `../render.yaml` (raíz del repo) | Blueprint de Render: web service + Postgres free (ver §16). |
 | `.env.example`, `.gitignore` | Plantilla de variables y exclusiones de secretos. |
 | `evidencias/` | Capturas y mediciones. |
 | `data/incidentes.json` | Datos heredados de semanas anteriores; no se usan. |
@@ -137,16 +143,18 @@ sequenceDiagram
 | Campo | Tipo | Reglas |
 |---|---|---|
 | `id` | Int | PK autoincremental (interno, no se expone) |
-| `codigo` | String | `@unique`, formato `INC-###` (temporal `PEND-<uuid>` dentro de la transacción) |
+| `codigo` | String (TEXT) | `@unique`, formato `INC-###` (temporal `PEND-<uuid>` dentro de la transacción) |
 | `titulo` | String | 5–100 |
 | `descripcion` | Text | 20–500 |
 | `severidad` | String | critica, alta, media o baja |
 | `prioridad` | String | mismos valores; por defecto igual a la severidad |
-| `estado` | String | por defecto "En investigación" |
+| `estado` | String | por defecto "En investigación"; valores: En investigación, Contención en curso, Resuelto, Cerrado |
 | `tipo` | String | 2–80 (en la UI: phishing, malware, acceso, vulnerabilidad) |
 | `fecha` | String | AAAA-MM-DD, no futura |
 | `reportante` | String | reportante, o el correo, o "sin-correo" |
+| `actualizadoPor` | String? | correo del último usuario que creó, modificó o cerró (auditoría) |
 | `createdAt` | DateTime | `now()` |
+| `updatedAt` | DateTime | `@updatedAt`, fecha de la última modificación |
 
 **Usuario**
 | Campo | Tipo | Reglas |
@@ -166,13 +174,13 @@ El formato de error es `{ "ok": false, "mensaje": "...", "detalles"?: {...}, "re
 |---|---|---|---|---|
 | GET | `/api/salud` | público | — | 200 / 503 |
 | GET | `/api/listo` | público | — | 200 / 503 |
-| POST | `/api/auth/login` | público | `{correo, password}` | 200 / 401 / 400 (JSON inválido) |
+| POST | `/api/auth/login` | público (límite: 5 fallos / 15 min por IP) | `{correo, password}` | 200 / 401 / 400 (JSON inválido) / **429** |
 | GET | `/api/incidentes?severidad=&prioridad=&estado=` | analista, supervisor, admin | — | 200 / 401 |
 | GET | `/api/incidentes/:id` (código `INC-001` o id numérico) | todos | — | 200 / 401 / 404 |
 | POST | `/api/incidentes` | analista, admin | ver §9 | 201 / 400 / 401 / 403 |
 | PATCH | `/api/incidentes/:id` | supervisor, admin | `{estado}` | 200 / 400 / 401 / 403 / 404 |
 | PUT | `/api/incidentes/:id` | admin | los 7 campos editables | 200 / 400 / 401 / 403 / 404 |
-| DELETE | `/api/incidentes/:id` | admin | — | 200 / 401 / 403 / 404 |
+| DELETE | `/api/incidentes/:id` (**cierre lógico**) | admin | — | 200 (`estado: Cerrado`) / 401 / 403 / 404 / **409** (ya cerrado) |
 
 **Ejemplos**
 ```http
@@ -194,12 +202,17 @@ GET /api/incidentes?severidad=alta → 200 {"ok":true,"total":2,"datos":[{...},{
 GET /api/incidentes/INC-999       → 404 {"ok":false,"mensaje":"Incidente no encontrado"}
 PATCH /api/incidentes/INC-018 {"estado":"Resuelto"} → 200 {"ok":true,"datos":{...,"estado":"Resuelto"}}
 PATCH ... {"estado":"Resuelto","titulo":"x"} → 400 (campo no permitido)
-DELETE /api/incidentes/INC-018 (admin) → 200 {"ok":true,"datos":{...registro eliminado...}}
+DELETE /api/incidentes/INC-018 (admin) → 200 {"ok":true,"mensaje":"Incidente cerrado (borrado lógico)","datos":{...,"estado":"Cerrado","actualizadoPor":"admin@secureguard.edu","actualizadoEn":"2026-10-21T02:03:55Z"}}
+DELETE ... (otra vez) → 409 {"ok":false,"mensaje":"El incidente ya está cerrado"}
+PATCH ... {"estado":"Cerrado"} → 400 (Cerrado solo se alcanza con DELETE)
+PUT /api/incidentes/INC-018 (admin) {titulo,descripcion,severidad,prioridad,estado,tipo,fecha} → 200
+POST /api/auth/login (6.º intento fallido) → 429 {"ok":false,"mensaje":"Demasiados intentos de inicio de sesión. Intenta de nuevo en 15 minutos.","requestId":"..."}
 GET /api/salud → 200 {"ok":true,"servicio":"SecureGuard API","unidad":8,"entorno":"production","version":"8.0.0","commit":"716930e...","base":"conectada","uptimeSeg":120,"fecha":"..."}
 GET /.env → 404 {"ok":false,"mensaje":"Ruta no encontrada"}
 ```
 
 ## 7. Flujo de autenticación
+0. `express-rate-limit` cuenta los intentos **fallidos** por IP (los correctos no cuentan, `skipSuccessfulRequests`). Al 6.º en 15 minutos responde **429** con JSON y cabeceras `RateLimit-*`, y registra un WARN. Detrás del proxy la IP sale de `X-Forwarded-For` (`trust proxy`).
 1. El cliente envía `correo` y `password`; el correo se normaliza (trim y minúsculas).
 2. Se busca el usuario por correo. Si no existe, está inactivo o `bcrypt.compare` falla, responde **401 "Credenciales inválidas"** (el mismo mensaje en los tres casos).
 3. Se firma un JWT HS256 con `{id, rol}`, `exp` a 2 h y `JWT_SECRET`.
@@ -213,6 +226,7 @@ GET /.env → 404 {"ok":false,"mensaje":"Ruta no encontrada"}
 | Control | Dónde | Detalle |
 |---|---|---|
 | Hash de contraseñas | `security/hash.js` | bcryptjs con costo 10 (2¹⁰ rondas) y sal incluida |
+| Rate limiting | `app.js` | `express-rate-limit` en `/api/auth/login`: 5 fallos por IP cada 15 min (`LOGIN_MAX_INTENTOS`, `LOGIN_VENTANA_MIN`) → 429 |
 | Login sin enumeración | `auth.controller.js` | 401 idéntico para correo inexistente, usuario inactivo o clave mala |
 | JWT | `security/token.js` | HS256, 2 h, payload mínimo `{id, rol}` |
 | Fortaleza del secreto | `config/env.js` | `JWT_SECRET` de 64 hex (256 bits); si no cumple, no arranca |
@@ -226,13 +240,15 @@ GET /.env → 404 {"ok":false,"mensaje":"Ruta no encontrada"}
 | XSS | `public/js/vista.js` | `createElement` + `textContent`; CSP `script-src 'self' code.jquery.com` |
 | HTTPS | `server.js`, `app.js` | Local: autofirmado. Producción: TLS en el proxy, `trust proxy` y 301 a HTTPS (salvo `/api/salud`) |
 | Cabeceras | `app.js` | CSP, HSTS (180 días), nosniff, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy: no-referrer`, sin X-Powered-By |
-| CORS | `app.js` | Lista de orígenes (localhost y `CORS_ORIGINS`), métodos del CRUD, cabeceras Content-Type y Authorization |
+| CORS | `app.js` | En producción **solo** `CORS_ORIGINS`; en desarrollo, además localhost. Métodos del CRUD, cabeceras Content-Type y Authorization |
 | Superficie estática | `app.js` | Solo `public/`; `.env`, `certs/`, el código y `package.json` dan 404 |
 | Secretos | `.gitignore`, `.dockerignore`, `.env.example` | `.env`, `certs/`, `*.pem`, `*.key` y logs fuera del repo y de la imagen |
 | Fail-fast | `server.js` | Si falta una variable, no hay tráfico |
 | Logs seguros | `logger.js` | Sin cuerpos; password, token, authorization, secret y cookie quedan `[OCULTO]`; ruta sin query |
 | Errores sin fuga | `errorHandler.js` | Sin stack; 500 genérico en producción; requestId para el soporte |
-| Concurrencia | `models.crear` | Transacción + `codigo @unique`: sin códigos duplicados en altas simultáneas |
+| Concurrencia | `models.crear` | Transacción (`$transaction`): inserta con `PEND-<uuid>` y asigna `INC-<id SERIAL>` en la misma transacción; `codigo @unique`. Verificado en PostgreSQL con dos POST simultáneos (INC-005 e INC-006) |
+| Borrado lógico | `models.eliminar` | DELETE no borra: `estado = Cerrado` + `actualizadoPor`; el caso queda como evidencia; 409 si se repite |
+| Auditoría | modelo + schema | `actualizadoPor` (correo) y `updatedAt` en cada alta, cambio y cierre; visibles en el detalle |
 | Contenedor | `Dockerfile` | `USER node` (sin root), `npm ci --omit=dev` |
 | Claves demo | `seed.js` | En producción deben venir de variables |
 
@@ -242,10 +258,10 @@ GET /.env → 404 {"ok":false,"mensaje":"Ruta no encontrada"}
 | A01 Control de acceso roto | Mitigado | `exigirToken` + `exigirRol` en el servidor, comprobación de usuario activo, pruebas 401/403. Brecha: no hay propiedad por registro (todo analista ve todos los incidentes, que es lo esperado en un SOC). |
 | A02 Fallas criptográficas | Mitigado | bcrypt, JWT con secreto de 256 bits, HTTPS y HSTS, `DATABASE_SSL` opcional. |
 | A03 Inyección | Mitigado | Prisma parametrizado, allowlist, textContent y CSP. |
-| A04 Diseño inseguro | Parcial | Roles y estados definidos. Brecha: el borrado es físico y no hay auditoría. |
+| A04 Diseño inseguro | Mitigado | Roles y estados definidos, borrado lógico, auditoría de la última modificación. Brecha: no hay historial completo de cambios. |
 | A05 Configuración incorrecta | Mitigado | Fail-fast, cabeceras, sin X-Powered-By, estáticos limitados, 500 genérico. |
 | A06 Componentes vulnerables | Parcial | Dependencias recientes y lockfile. Pendiente: `npm audit` en CI y SRI para jQuery. |
-| A07 Fallas de identificación y autenticación | Parcial | Login genérico y vencimiento de 2 h. **Brecha: sin rate limiting ni bloqueo**, sin MFA, sin revocación de tokens. |
+| A07 Fallas de identificación y autenticación | Parcial | Login genérico, vencimiento de 2 h y **rate limiting de 5 fallos / 15 min (429)**. Brechas: sin MFA, sin revocación de tokens. |
 | A08 Integridad de software y datos | Parcial | Lockfile, `npm ci`, despliegue desde un commit. Brecha: jQuery por CDN sin SRI. |
 | A09 Fallas de registro y monitoreo | Mitigado | Logs JSON con nivel y requestId, health check. Brecha: no hay alertas automáticas ni registro de logins fallidos por usuario. |
 | A10 SSRF | No aplica | El servidor no hace peticiones a URLs que dé el usuario. |
@@ -259,7 +275,7 @@ GET /.env → 404 {"ok":false,"mensaje":"Ruta no encontrada"}
 | prioridad | opcional (= severidad) | obligatorio | ✖ | mismos valores |
 | tipo | obligatorio | obligatorio | ✖ | string, 2–80 |
 | fecha | obligatorio | obligatorio | ✖ | `AAAA-MM-DD`, fecha real, ≤ hoy (UTC) |
-| estado | ✖ (se fija "En investigación") | obligatorio | **único campo** | `En investigación`, `Contención en curso`, `Resuelto` |
+| estado | ✖ (se fija "En investigación") | obligatorio (admite `Cerrado`) | **único campo** (no admite `Cerrado`) | `En investigación`, `Contención en curso`, `Resuelto`, `Cerrado` (este último solo con DELETE o con PUT del admin) |
 | correo | opcional | ✖ | ✖ | ≤ 254, formato `a@b.c` |
 | reportante | opcional | ✖ | ✖ | ≤ 254 |
 | otros (`id`, `codigo`, `rol`…) | 400 | 400 | 400 | allowlist |
@@ -274,14 +290,14 @@ Formato (una línea JSON por evento):
 - Niveles: `INFO` para 2xx y 3xx, `WARN` para 4xx y `ERROR` para 5xx y excepciones. El nivel mínimo se controla con `LOG_LEVEL`.
 - Eventos: `servidor iniciado` (entorno, versión, commit), `solicitud`, `error no controlado`, `configuración inválida`, `apagado solicitado` y `promesa rechazada sin manejar`.
 - Qué nunca se registra: cuerpos, query strings, Authorization, tokens ni contraseñas.
-- Dónde se ven: stdout (el panel de logs de Railway) y, si se configura `LOG_FILE`, un archivo local (excluido de Git).
+- Dónde se ven: stdout (el panel **Logs** de Render) y, si se configura `LOG_FILE`, un archivo local (excluido de Git).
 - Diagnóstico: el usuario reporta el `requestId` del error y se busca en los logs.
 - Umbrales sugeridos: más del 5 % de 5xx en 5 minutos, salud en 503 durante más de 2 minutos o p95 mayor a 1 s requieren acción. Para un monitor externo gratuito sirve UptimeRobot sobre `/api/salud` cada 5 minutos.
 - Ventana de observación: 15 minutos después de cada despliegue.
 
 ## 11. Health check
-- `GET /api/salud` ejecuta `SELECT 1` en MySQL. Responde **200** con `base: "conectada"`, o **503** con `base: "no disponible"`. Incluye entorno, versión, commit (`RAILWAY_GIT_COMMIT_SHA` o `RENDER_GIT_COMMIT`), uptime y fecha.
-- Railway lo usa (`railway.json`, timeout de 120 s) para dar por sano un despliegue y reiniciar ante un fallo.
+- `GET /api/salud` ejecuta `SELECT 1` en PostgreSQL. Responde **200** con `base: "conectada"`, o **503** con `base: "no disponible"`. Incluye entorno, versión, commit (`RENDER_GIT_COMMIT`), uptime y fecha.
+- Render lo usa (`healthCheckPath: /api/salud` en `render.yaml`) para dar por sano un despliegue (zero-downtime) y reiniciar instancias que fallan.
 - Está excluido de la redirección a HTTPS para que los chequeos internos funcionen.
 - `GET /api/listo` es la versión mínima, que se conserva de Semana 7.
 - Limitación: un 200 no garantiza que el login funcione, por eso además se corre el smoke test y el recorrido manual.
@@ -291,12 +307,13 @@ Formato (una línea JSON por evento):
 |---|---|---|---|
 | `NODE_ENV` | producción | `production` | Modo |
 | `PORT` | la inyecta el hosting | `3000` | Puerto |
-| `DATABASE_URL` | sí | `mysql://USUARIO:CLAVE@HOST:3306/BASE` | Conexión |
+| `DATABASE_URL` | sí | `postgresql://usuario:TU_CLAVE@localhost:5432/secureguard` | Conexión (en Render: `fromDatabase.connectionString`) |
 | `DATABASE_SSL` | no | `false` | TLS hacia la base |
 | `JWT_SECRET` | sí | `<64 hex>` | Firma de tokens |
 | `HTTPS_ENABLED` | no | `true` local / `false` prod | HTTPS propio |
 | `TRUST_PROXY` | no | `true` en prod | Proxy y redirección |
-| `CORS_ORIGINS` | no | `https://<app>.up.railway.app` | Orígenes extra |
+| `CORS_ORIGINS` | en producción | `https://secureguard.onrender.com` | Únicos orígenes CORS en producción |
+| `LOGIN_MAX_INTENTOS` / `LOGIN_VENTANA_MIN` | no | `5` / `15` | Rate limiting del login |
 | `LOG_LEVEL` | no | `info` | Nivel mínimo |
 | `LOG_FILE` | no | `logs/app.log` | Archivo de log |
 | `APP_VERSION` | no | `8.0.0` | Sobrescribe la versión |
@@ -315,17 +332,31 @@ Formato (una línea JSON por evento):
 | `npm run lint` / `npm test` / `npm run verificar` | ESLint, Jest, o ambos |
 | `npm run smoke` | Smoke test contra `BASE_URL` |
 | `npm run medir:red -- identity\|gzip` | Medición de red |
-| `docker compose up -d --build` | App + MySQL en local (puerto 8080) |
+| `docker compose up -d --build` | App + PostgreSQL 16 en local (puerto 8080) |
 
 ## 14. Pruebas
 | Suite | Casos | Cubre |
 |---|---|---|
-| `tests/incidentes-validation.test.js` | Unitarias | Normalización y prioridad por defecto; campos internos rechazados; 12 casos inválidos (vacío, mínimos y máximos, ausentes, fecha mal formada o futura, correo, prioridad, estado); cuerpos que no son objeto; límites exactos 100 y 500; PATCH solo estado, vacío o no texto; PUT completo, con estado o prioridad inválidos |
-| `tests/incidentes-model.test.js` | Unitarias | IDs `1.5`, `1e309`, `0`, `-1` no se envían como Int; IDs decimales válidos; creación transaccional con códigos distintos |
-| `tests/api.test.js` | Integración HTTP (supertest, base simulada) | Salud 200 y 503; login 401 y 200 (sin hash); sin token y token alterado 401; analista DELETE y supervisor POST 403; listar 200; crear 201; datos 400; JSON mal formado 400; inexistente 404; PATCH 200; DELETE 200; `/.env`, `/server.js`, `/certs/key.pem`, `/package.json`, `/src/app.js` y `/prisma/schema.prisma` dan 404; cabeceras presentes; logger oculta secretos |
+| `tests/incidentes-validation.test.js` | Unitarias | Normalización y prioridad por defecto; campos internos rechazados; 12 casos inválidos (vacío, mínimos y máximos, ausentes, fecha mal formada o futura, correo, prioridad, estado); cuerpos que no son objeto; límites exactos 100 y 500; PATCH solo estado (rechaza `Cerrado`), vacío o no texto; PUT completo, con estado o prioridad inválidos |
+| `tests/incidentes-model.test.js` | Unitarias | IDs `1.5`, `1e309`, `0`, `-1` no se envían como Int; IDs decimales válidos; creación transaccional con códigos distintos; **borrado lógico** (actualiza a Cerrado, no llama a `delete`); cerrar uno ya cerrado no lo toca; `actualizar` registra `actualizadoPor` e ignora `id` |
+| `tests/api.test.js` | Integración HTTP (supertest, base simulada) | Salud 200 y 503; login 401 y 200 (sin hash); sin token y token alterado 401; analista DELETE y supervisor POST 403; listar 200; crear 201; datos 400; JSON mal formado 400; inexistente 404; PATCH 200; PATCH a Cerrado 400; **DELETE lógico 200 + auditoría**, repetido 409; **PUT** admin 200, supervisor 403, incompleto 400, inexistente 404; rutas sensibles 404; cabeceras; logger oculta secretos |
+| `tests/rate-limit.test.js` | Integración HTTP | 5 fallos → 401; 6.º → **429** con JSON y cabeceras `RateLimit`; las rutas de incidentes no consumen el límite |
 | `scripts/smoke.js` | Productiva | Salud, 401, login inválido, rutas sensibles y login demo con listado |
 
-**Resultados (19/10/2026, PC local con MySQL en Docker):** ESLint 0 errores; Jest **3 suites, 53/53**; smoke 8/8. CRUD real por rol: analista crea 201; supervisor crea 403; dato inválido 400; leer 200; analista PATCH 403; supervisor PATCH 200; analista DELETE 403; admin DELETE 200; leído después 404. En modo producción por HTTP: salud 200, HTTP da 301 a HTTPS y vía proxy da 200.
+**Resultados (20/10/2026, PC local con PostgreSQL 16 en Docker, contenedor `postgres-secureguard`):**
+- `node --check` sin errores y ESLint con 0 errores.
+- Jest: **4 suites, 64/64**.
+- Smoke: **8/8**.
+- Migración `migrate dev` aplicada; `migrate deploy` sin pendientes.
+- CRUD real por rol:
+  - POST analista 201 (`actualizadoPor` = analista)
+  - dos POST simultáneos 201 con INC-005 e INC-006 (códigos distintos)
+  - POST supervisor 403; dato inválido 400; GET 200
+  - PATCH analista 403; PATCH supervisor 200 (auditado); PATCH a Cerrado 400
+  - PUT supervisor 403; PUT admin 200
+  - DELETE analista 403; DELETE admin 200 con `Cerrado` (auditado); DELETE repetido 409; GET posterior 200 con `Cerrado`
+- Rate limit en vivo: 401 ×5 y luego 429, con log WARN.
+- Modo producción por HTTP: salud 200 con la base conectada, HTTP da 301 a HTTPS, CORS solo responde al origen configurado y el seed sin claves se omite.
 
 ## 15. Rendimiento (Semana 7, conservado)
 - GET del listado (5 corridas): la mediana pasó de 18 a 15 ms con un `select` explícito. La muestra es pequeña y no es concluyente.
@@ -334,11 +365,16 @@ Formato (una línea JSON por evento):
 - Detalles en `evidencias/medicion-red-*.json` y `medicion-red-comparacion.txt`.
 
 ## 16. Despliegue y reversión
-- **Railway (recomendado):** servicio desde GitHub con Root Directory `SEMANA 8`, Dockerfile, MySQL del mismo proyecto (`DATABASE_URL=${{MySQL.MYSQL_URL}}`), health check `/api/salud` y dominio `*.up.railway.app` con HTTPS. Pasos completos en `DESPLIEGUE.md`.
-- **Imagen:** `node:22-slim` + openssl, `NODE_ENV=production`, `HTTPS_ENABLED=false`, `TRUST_PROXY=true`, `npm ci --omit=dev`, `USER node` y `CMD npm run start:prod`.
-- **Alternativa:** Render (Docker) con MySQL externo (Aiven o TiDB, `DATABASE_SSL=true`). En el plan gratuito, el servicio entra en reposo.
-- **Trazabilidad:** commit en `main`, `commit` visible en `/api/salud` y la etiqueta `v8.0.0`.
-- **Reversión:** Railway → Deployments → Redeploy del último despliegue estable, o `git revert`. Las migraciones son aditivas y se respalda con `mysqldump` antes de cambiar el esquema.
+- **Render (elegido):** Blueprint `render.yaml` en la raíz del repo.
+  - Web service `secureguard`: runtime node, plan free, `rootDir: SEMANA 8`, build `npm ci`, start `npm run start:prod`, `healthCheckPath: /api/salud`.
+  - Variables fijas: `NODE_ENV=production`, `HTTPS_ENABLED=false`, `TRUST_PROXY=true`, `LOG_LEVEL`, `NODE_VERSION=22`.
+  - Secretos con `sync: false`: `JWT_SECRET`, `CORS_ORIGINS` y las `SEED_*`.
+  - `DATABASE_URL` sale de la base `secureguard-db` (Postgres 16, plan free) con `fromDatabase.connectionString`.
+- **Arranque:** `prisma migrate deploy` → `node src/seed.js` (idempotente; se omite si faltan claves) → `node server.js`. El plan free no tiene Shell, pre-deploy ni one-off jobs.
+- **Límites free:** el servicio se duerme a los 15 minutos (despertar tarda cerca de 1 minuto) y Postgres free **expira a los 30 días**, con 14 días de gracia. Pasos completos en `DESPLIEGUE.md`.
+- **Contenedor alternativo:** `Dockerfile` (node:22-slim, `USER node`, `npm ci --omit=dev`, `CMD npm run start:prod`) y `docker-compose.yml` (app + postgres:16). Sirve para Render con runtime docker o para otro hosting.
+- **Trazabilidad:** commit en `main`, el `commit` de `/api/salud` (`RENDER_GIT_COMMIT`) y la etiqueta `v8.0.0`.
+- **Reversión:** Rollback en el panel (el free permite los 2 despliegues anteriores) o `git revert` + push (auto-deploy). Respaldo con `pg_dump` antes de cambios de esquema; las migraciones son aditivas.
 
 ## 17. Checklist de producción
 - [ ] `npm run verificar` en verde sobre el commit que se despliega
@@ -358,19 +394,17 @@ Formato (una línea JSON por evento):
 - [ ] Después de la evaluación: rotar `JWT_SECRET` y las claves demo, y borrar los datos de prueba
 
 ## 18. Limitaciones y trabajo futuro
+Corregido en la tercera revisión: rate limiting del login, borrado lógico, auditoría de la última modificación, selector de estado completo, edición con PUT en la UI, detalle con datos reales y CORS restringido en producción.
+
 | Limitación | Riesgo | Mejora |
 |---|---|---|
-| **Sin rate limiting** en el login | Fuerza bruta | `express-rate-limit` en `/api/auth` y bloqueo progresivo |
-| **Borrado físico** (no hay estado "Cerrado") | Se pierde la evidencia del incidente | Borrado lógico (`cerradoEn` o estado "Cerrado") |
-| Sin auditoría de cambios | No se sabe quién cambió qué | Tabla `Historial` (usuario, acción, antes/después, fecha) |
+| El rate limit es en memoria y por IP (se reinicia con el servicio; una IP compartida bloquea a todos sus usuarios) | Bloqueo cruzado o evasión con varias IP | Store en Redis o Key Value y límite por cuenta además de por IP |
+| La auditoría guarda solo la **última** modificación | No hay historial completo | Tabla `Historial` (usuario, acción, antes/después, fecha) |
 | Token en `sessionStorage`, sin revocación ni refresh | Robo por XSS; logout solo local | Cookie HttpOnly + SameSite, refresh token y lista de revocación |
-| La UI no tiene edición completa (PUT) y el botón de estado solo pasa a "Contención en curso" | Para resolver hay que usar la API | Selector de estado y formulario de edición |
-| `detalle.html` es estático | No muestra datos reales | Cargar `GET /api/incidentes/:id` |
-| Pruebas de integración con base simulada | No detectan fallos de la base real | e2e con MySQL en GitHub Actions |
-| CORS en producción incluye orígenes localhost | Superficie mínima innecesaria | Lista solo por variable en producción |
+| Pruebas de integración con base simulada | No detectan fallos de la base real | e2e con Postgres en GitHub Actions (servicio `postgres:16`) |
 | jQuery por CDN sin SRI | Cadena de suministro | Servirlo localmente o con `integrity` |
 | bcrypt con costo 10 | Aceptable hoy | Subir a 12 según el hardware |
-| Plan gratuito | Reposo, límites y retención de logs | Plan pagado con alertas |
+| Render free: reposo, Postgres que expira a los 30 días, sin respaldos | Corte durante la demo o pérdida de datos | Plan pago o crear la base cerca de la fecha de defensa |
 | Sin MFA ni gestión de usuarios | Cuentas compartidas | Altas y bajas, MFA y política de contraseñas |
 
 Esta es una **solución académica**. Para tratar información institucional se necesitaría además pentest, respaldos probados, acuerdos de servicio, cumplimiento (LOPDP, ISO 27001) y responsables de operación.

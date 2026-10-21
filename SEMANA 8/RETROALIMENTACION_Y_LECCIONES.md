@@ -5,12 +5,14 @@
 ## Retroalimentación recibida y clasificación
 | Observación | Tipo | Impacto | Urgencia | Esfuerzo | Acción |
 |---|---|---|---|---|---|
-| Faltaba URL desplegada y versión final identificada | Defecto | Alto | Alta | Medio | Dockerfile, railway.json, configuración por entorno y etiqueta `v8.0.0` (hecho en Semana 8) |
+| Faltaba URL desplegada y versión final identificada | Defecto | Alto | Alta | Medio | Dockerfile, render.yaml (Render + Postgres), configuración por entorno y etiqueta `v8.0.0` (hecho en Semana 8) |
 | El cliente apuntaba a `https://localhost:3000` | Defecto | Alto | Alta | Bajo | Ruta relativa `/api` (corregido) |
 | Faltaban pruebas de casos fallidos | Mejora | Medio | Media | Medio | 12 casos nuevos de validación + integración HTTP (hecho) |
 | Medición de red sin comparación controlada | Mejora | Medio | Baja | Bajo | `scripts/medir-red.js` con SHA-256 y medianas (hecho) |
 | Faltaba el informe PDF de Semana 7 | Defecto de entrega | Medio | Media | Bajo | Regenerar el PDF de evidencias (pendiente del estudiante) |
-| Sin límite de intentos de login | Mejora | Medio | Baja | Bajo | Planificado: `express-rate-limit` |
+| Sin límite de intentos de login | Defecto de seguridad | Alto | Media | Bajo | `express-rate-limit`, 5 fallos / 15 min → 429 (hecho) |
+| Borrado físico sin rastro | Defecto | Alto | Media | Bajo | Borrado lógico a *Cerrado* + `actualizadoPor` y `updatedAt` (hecho) |
+| UI incompleta (sin edición, estado fijo, detalle estático) | Mejora | Medio | Media | Medio | Selector de estado, formulario PUT y detalle real (hecho) |
 
 ## Retrospectiva: planificado frente a ocurrido
 - **Planificado:** CRUD con seguridad por semanas y despliegue al final.

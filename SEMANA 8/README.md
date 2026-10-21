@@ -1,8 +1,8 @@
 # SecureGuard — Unidad 8: despliegue, monitoreo y proyecto final
 
-Versión **8.0.0**. Plataforma de gestión de incidentes con CRUD persistente (Prisma + MySQL), autenticación JWT, autorización por roles, validación, HTTPS, configuración por entorno, logs estructurados, health check, pruebas finales y despliegue en Railway con Docker. Parte de Semana 7 y de las correcciones hechas tras la retroalimentación.
+Versión **8.0.0**. Plataforma de gestión de incidentes con CRUD persistente (Prisma + PostgreSQL 16) con borrado lógico y auditoría, autenticación JWT, autorización por roles, rate limiting del login, validación, HTTPS, configuración por entorno, logs estructurados, health check, pruebas finales y despliegue en Render (Blueprint `render.yaml` en la raíz del repo, Web Service + Postgres free). Parte de Semana 7 y de las correcciones hechas tras la retroalimentación.
 
-| Rol | Ver | Crear | Cambiar estado | Reemplazar (PUT) | Eliminar |
+| Rol | Ver | Crear | Cambiar estado | Editar (PUT) | Cerrar (borrado lógico) |
 |---|:-:|:-:|:-:|:-:|:-:|
 | analista | ✔ | ✔ | | | |
 | supervisor | ✔ | | ✔ | | |
@@ -13,7 +13,7 @@ Versión **8.0.0**. Plataforma de gestión de incidentes con CRUD persistente (P
 |---|---|
 | `DOCUMENTACION_TECNICA.md` | Arquitectura (mermaid), variables, API, seguridad, pruebas, despliegue, monitoreo y limitaciones |
 | `MANUAL_USUARIO.md` | Uso de la plataforma por rol y solución de problemas |
-| `DESPLIEGUE.md` | Pasos exactos para publicar en Railway, verificar, etiquetar y revertir |
+| `DESPLIEGUE.md` | Pasos exactos para publicar en Render (Blueprint o manual), seed, verificar, etiquetar y revertir |
 | `PRESENTACION.md` | Contenido de las diapositivas |
 | `GUION_VIDEO_DEFENSA.md` | Guion de 10 min (funcionalidad, código y seguridad a fondo) y anexo de preguntas |
 | `CHECKLIST_EVIDENCIAS.md` | Capturas para el PDF de evidencias |
@@ -25,11 +25,11 @@ Versión **8.0.0**. Plataforma de gestión de incidentes con CRUD persistente (P
 ```powershell
 npm install
 copy .env.example .env    # completa DATABASE_URL, JWT_SECRET, etc.
-docker start mysql-incidentes
+docker start postgres-secureguard   # o crea uno: ver DESPLIEGUE.md
 npm run cert; npm run migrate; npm run seed
 npm start                 # https://localhost:3000
 ```
-Con contenedores: `docker compose up -d --build` y luego `docker compose exec app npm run seed`; abre `http://localhost:8080`.
+Con contenedores: `docker compose up -d --build` (app + postgres:16; el seed corre al arrancar si defines `SEED_*`); abre `http://localhost:8080`.
 
 ## Verificación
 - `npm run verificar` corre ESLint y Jest (unitarias e integración HTTP).

@@ -6,14 +6,21 @@ const { crearHash } = require("./security/hash");
 // (SEED_ANALISTA_PASSWORD, SEED_SUPERVISOR_PASSWORD, SEED_ADMIN_PASSWORD).
 const PRODUCCION = process.env.NODE_ENV === "production";
 
+const VARIABLES = ["SEED_ANALISTA_PASSWORD", "SEED_SUPERVISOR_PASSWORD", "SEED_ADMIN_PASSWORD"];
+
 function clave(variable, demo) {
     const valor = process.env[variable];
     if (valor) return valor;
-    if (PRODUCCION) throw new Error(`Falta ${variable}: en producción no se usan claves de demostración.`);
     return demo;
 }
 
 async function main() {
+    // En producción el seed corre en cada arranque (npm run start:prod) y es idempotente (upsert).
+    // Si faltan las claves por variable, se omite: nunca se crean cuentas con claves de demostración.
+    if (PRODUCCION && VARIABLES.some((v) => !process.env[v])) {
+        console.warn("Seed omitido: define SEED_ANALISTA_PASSWORD, SEED_SUPERVISOR_PASSWORD y SEED_ADMIN_PASSWORD.");
+        return;
+    }
     const cuentas = [
         ["Ana Analista", "analista@secureguard.edu", clave("SEED_ANALISTA_PASSWORD", "analista123"), "analista"],
         ["Sol Supervisor", "supervisor@secureguard.edu", clave("SEED_SUPERVISOR_PASSWORD", "supervisor123"), "supervisor"],

@@ -56,3 +56,46 @@ No se copiaron ni se subieron: `.env`, `certs/`, `node_modules/`, `.venv/`, `.ag
 | `MODIFICACIONES_HECHAS_POR_GROK.md` | Esta sección | Registro de cambios |
 
 No se modificó código. Según el código, estos controles **no existen** y se documentan como limitaciones: rate limiting en el login, borrado lógico (el DELETE es físico), auditoría de cambios, revocación de tokens, edición completa en la UI (PUT solo por API), selector de estado (el botón solo pasa a "Contención en curso") y una página de detalle con datos en vivo (`detalle.html` es estática).
+
+## Tercera ronda: PostgreSQL + Render (20/10/2026)
+### Base de datos: MySQL → PostgreSQL
+| Archivo | Cambio | Motivo |
+|---|---|---|
+| `prisma/schema.prisma` | `provider = "postgresql"`; nuevos campos `actualizadoPor String?` y `updatedAt @updatedAt` en `Incidente` | Migración a Postgres y auditoría |
+| `prisma/migrations/` | **Eliminadas** `20261007040417_init` y `20261007044322_usuarios` (MySQL). **Nueva** `20261021020229_init_postgres` generada con `prisma migrate dev` contra postgres:16; `migration_lock.toml` con `postgresql` | Historial limpio para Postgres |
+| `src/lib/prisma.js` | `PrismaMariaDb` → `PrismaPg` (`connectionString` = `DATABASE_URL`, pool de 5, timeout de 10 s, `DATABASE_SSL=true` → TLS) | Driver adapter de Prisma 7 para Postgres |
+| `package.json` / `package-lock.json` | Se quitó `@prisma/adapter-mariadb`; se agregaron `@prisma/adapter-pg`, `pg` y `express-rate-limit`; `start:prod` = migrate deploy → seed → server | Postgres, rate limit y arranque en Render free |
+| `src/seed.js` | En producción, si faltan las `SEED_*` se omite con un aviso (exit 0) en lugar de fallar | Corre en cada arranque de Render sin romperlo |
+| `.env.example` | `postgresql://usuario:TU_CLAVE@localhost:5432/secureguard`, `LOGIN_MAX_INTENTOS`, `LOGIN_VENTANA_MIN` | Nueva configuración |
+| `docker-compose.yml` | `mysql:8.4` → `postgres:16` (healthcheck `pg_isready`) | Entorno local igual a producción |
+| `Dockerfile` | Comentario actualizado (el CMD sigue siendo `npm run start:prod`) | — |
+| `railway.json` | **Eliminado** | Se cambió de hosting |
+| `render.yaml` (**raíz del repo**) | **Nuevo** Blueprint: web `secureguard` (node, free, `rootDir: SEMANA 8`, `npm ci`, `npm run start:prod`, `healthCheckPath: /api/salud`, variables fijas y secretos `sync: false`) + base `secureguard-db` (Postgres 16 free) por `fromDatabase.connectionString` | Despliegue en Render |
+| Consultas | Sin SQL específico de MySQL: el único SQL a mano es `SELECT 1`, compatible. La generación de `INC-###` dentro de `$transaction` funciona igual con `SERIAL` | Verificado con altas concurrentes |
+
+### Brechas corregidas
+| Archivo | Cambio |
+|---|---|
+| `src/app.js` | (a) `express-rate-limit` en `/api/auth/login`: 5 fallos por IP cada 15 min, `skipSuccessfulRequests`, 429 con JSON y log WARN. CORS en producción **solo** `CORS_ORIGINS` |
+| `src/config/env.js` | `LOGIN_MAX_INTENTOS` y `LOGIN_VENTANA_MIN` |
+| `src/models/incidentes.model.js` | (b) `eliminar` = borrado lógico (`estado: Cerrado` + `actualizadoPor`; `{yaCerrado}` si se repite). `crear` y `actualizar` registran `actualizadoPor`. `aCliente` expone `actualizadoPor` y `actualizadoEn` |
+| `src/controllers/incidentes.controller.js` | Pasa `req.usuario.correo` al modelo; DELETE responde 200 con el caso cerrado o 409 si ya lo estaba |
+| `src/validation/incidentes.js` | `ESTADOS` incluye `Cerrado`; PATCH no permite `Cerrado` (solo DELETE o PUT del admin) |
+| `public/js/vista.js` | (c) Selector de estado + *Aplicar estado* (supervisor y admin), *Editar* y *Cerrar* (admin); los casos cerrados se ven atenuados y con controles deshabilitados; enlace *Ver detalle*; `pintarDetalle()` con textContent |
+| `public/js/controlador.js` | Formulario de edición (PUT), selector de estado (PATCH), cierre con confirmación; mensajes "PostgreSQL" |
+| `public/js/modelo.js` | `obtenerIncidente`, `reemplazarIncidente`, `ESTADOS_SELECCIONABLES`; mensajes para 429 y detalle de validación |
+| `public/index.html` | Sección **Editar incidente** (solo admin, oculta por defecto); menú "Editar" |
+| `public/detalle.html` + `public/js/detalle.js` (nuevo) | (d) Detalle real por `?id=` con `GET /api/incidentes/:id` y textContent; muestra la última modificación |
+| `public/css/estilos.css` | Estilos para acciones, botones deshabilitados y tarjetas cerradas |
+
+### Pruebas
+| Archivo | Cambio |
+|---|---|
+| `tests/rate-limit.test.js` | Nuevo: 5 × 401 y luego 429 con JSON y cabeceras RateLimit |
+| `tests/api.test.js` | DELETE lógico (200 + auditoría, 409), PATCH a Cerrado 400, PUT (admin 200, supervisor 403, incompleto 400, inexistente 404) |
+| `tests/incidentes-model.test.js` | Borrado lógico sin `delete`, cerrado repetido, `actualizadoPor` en `actualizar` |
+
+Resultado: ESLint 0 errores, Jest **4 suites, 64/64**, smoke 8/8 y CRUD por rol contra postgres:16 local (contenedor nuevo `postgres-secureguard`; `mysql-incidentes` no se tocó).
+
+### Documentación
+`DESPLIEGUE.md` (reescrito para Render), `DOCUMENTACION_TECNICA.md`, `MANUAL_USUARIO.md`, `GUION_VIDEO_DEFENSA.md` (mismos 10 minutos; seguridad con rate limit, borrado lógico y auditoría), `PRESENTACION.md`, `CHECKLIST_EVIDENCIAS.md` (evidencias 25–31), `README.md`, `RETROALIMENTACION_Y_LECCIONES.md` y este archivo. Las menciones anteriores a Railway y MySQL en las rondas 1 y 2 quedan como historial.

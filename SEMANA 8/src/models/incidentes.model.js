@@ -12,7 +12,9 @@ function aCliente(row) {
         fecha: row.fecha,
         estado: row.estado,
         tipo: row.tipo,
-        reportante: row.reportante
+        reportante: row.reportante,
+        actualizadoPor: row.actualizadoPor || null,
+        actualizadoEn: row.updatedAt || null
     };
 }
 
@@ -44,7 +46,9 @@ async function listar(filtro = {}) {
             fecha: true,
             estado: true,
             tipo: true,
-            reportante: true
+            reportante: true,
+            actualizadoPor: true,
+            updatedAt: true
         }
     });
     return filas.map(aCliente);
@@ -54,7 +58,7 @@ async function obtener(id) {
     return aCliente(await prisma.incidente.findFirst({ where: donde(id) }));
 }
 
-async function crear(datos) {
+async function crear(datos, usuario = null) {
     return prisma.$transaction(async (transaccion) => {
         const creado = await transaccion.incidente.create({
             data: {
@@ -66,7 +70,8 @@ async function crear(datos) {
                 estado: "En investigación",
                 tipo: datos.tipo,
                 fecha: datos.fecha,
-                reportante: datos.reportante || datos.correo || "sin-correo"
+                reportante: datos.reportante || datos.correo || "sin-correo",
+                actualizadoPor: usuario
             }
         });
         const codigo = `INC-${String(creado.id).padStart(3, "0")}`;
@@ -77,7 +82,7 @@ async function crear(datos) {
     });
 }
 
-async function actualizar(id, cambios) {
+async function actualizar(id, cambios, usuario = null) {
     const actual = await prisma.incidente.findFirst({ where: donde(id) });
     if (!actual) return null;
     const camposPermitidos = ["titulo", "descripcion", "severidad", "prioridad", "estado", "tipo", "fecha"];
@@ -86,14 +91,20 @@ async function actualizar(id, cambios) {
         if (Object.hasOwn(cambios, campo)) data[campo] = cambios[campo];
     }
     if (data.severidad && !data.prioridad) data.prioridad = data.severidad;
+    data.actualizadoPor = usuario;
     return aCliente(await prisma.incidente.update({ where: { id: actual.id }, data }));
 }
 
-async function eliminar(id) {
+// Borrado lógico: el incidente no se elimina, pasa a "Cerrado" y queda para auditoría.
+// Devuelve null si no existe y { yaCerrado: true } si ya estaba cerrado.
+async function eliminar(id, usuario = null) {
     const actual = await prisma.incidente.findFirst({ where: donde(id) });
     if (!actual) return null;
-    await prisma.incidente.delete({ where: { id: actual.id } });
-    return aCliente(actual);
+    if (actual.estado === "Cerrado") return { yaCerrado: true };
+    return aCliente(await prisma.incidente.update({
+        where: { id: actual.id },
+        data: { estado: "Cerrado", actualizadoPor: usuario }
+    }));
 }
 
 module.exports = { listar, obtener, crear, actualizar, eliminar };

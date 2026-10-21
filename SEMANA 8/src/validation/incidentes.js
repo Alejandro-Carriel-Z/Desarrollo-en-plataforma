@@ -18,7 +18,7 @@ const CAMPOS_REEMPLAZO = [
     "fecha"
 ];
 const SEVERIDADES = ["critica", "alta", "media", "baja"];
-const ESTADOS = ["En investigación", "Contención en curso", "Resuelto"];
+const ESTADOS = ["En investigación", "Contención en curso", "Resuelto", "Cerrado"];
 
 function errorValidacion(detalles) {
     const error = new Error("Validación fallida");
@@ -118,7 +118,8 @@ function validarParche(entrada) {
     }
     const datos = { estado: entrada.estado };
     validarTexto(datos, "estado", { maximo: 40 });
-    if (!ESTADOS.includes(datos.estado)) {
+    // "Cerrado" solo se alcanza con DELETE (admin, borrado lógico), no con PATCH.
+    if (!ESTADOS.includes(datos.estado) || datos.estado === "Cerrado") {
         throw errorValidacion({ estado: "Selecciona un estado válido." });
     }
     return datos;
@@ -134,4 +135,4 @@ function validarReemplazo(entrada) {
     return validarContenido({ ...entrada }, { reemplazo: true });
 }
 
-module.exports = { validarCreacion, validarParche, validarReemplazo };
+module.exports = { validarCreacion, validarParche, validarReemplazo, ESTADOS, SEVERIDADES };

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Detalle de un incidente de ciberseguridad en SecureGuard.">
-    <title>SecureGuard | Caso INC-002</title>
+    <title>SecureGuard | Detalle</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -13,9 +13,9 @@
 <body>
     <header class="hero hero-compact">
         <div class="hero-content">
-            <p class="eyebrow">SECUREGUARD / CASO DESTACADO</p>
-            <h1>Acceso no autorizado a servidor</h1>
-            <p class="hero-copy">INC-002 · Severidad crítica · Contención en curso</p>
+            <p class="eyebrow">SECUREGUARD / DETALLE DEL INCIDENTE</p>
+            <h1 id="det-titulo">Detalle del incidente</h1>
+            <p class="hero-copy" id="det-resumen">Cargando…</p>
         </div>
     </header>
 
@@ -24,7 +24,7 @@
         <ul>
             <li><a href="index.html#listado-incidentes">Incidentes</a></li>
             <li><a href="index.html#registro-incidente">Registrar</a></li>
-            <li><a href="detalle.html" aria-current="page">Caso destacado</a></li>
+            <li><a href="detalle.html" aria-current="page">Detalle</a></li>
         </ul>
     </nav>
 
@@ -33,16 +33,19 @@
             <section class="content-section" aria-labelledby="titulo-detalle">
                 <p class="eyebrow">FICHA DEL INCIDENTE</p>
                 <h2 id="titulo-detalle">Qué se registró</h2>
+                <p id="det-aviso" role="status" aria-live="polite">Cargando…</p>
                 <dl class="detail-list">
-                    <div><dt>Código</dt><dd>INC-002</dd></div>
-                    <div><dt>Tipo</dt><dd>Acceso no autorizado</dd></div>
-                    <div><dt>Severidad</dt><dd>Crítica</dd></div>
-                    <div><dt>Estado</dt><dd>Contención en curso</dd></div>
-                    <div><dt>Fecha</dt><dd>2026-09-02</dd></div>
-                    <div><dt>Reportante</dt><dd>admin@secureguard.edu</dd></div>
+                    <div><dt>Código</dt><dd id="det-codigo">—</dd></div>
+                    <div><dt>Tipo</dt><dd id="det-tipo">—</dd></div>
+                    <div><dt>Severidad</dt><dd id="det-severidad">—</dd></div>
+                    <div><dt>Prioridad</dt><dd id="det-prioridad">—</dd></div>
+                    <div><dt>Estado</dt><dd id="det-estado">—</dd></div>
+                    <div><dt>Fecha</dt><dd id="det-fecha">—</dd></div>
+                    <div><dt>Reportante</dt><dd id="det-reportante">—</dd></div>
+                    <div><dt>Última modificación</dt><dd id="det-actualizado">—</dd></div>
                 </dl>
                 <h3>Descripción</h3>
-                <p>Inicio de sesión atípico en un servidor interno fuera del horario laboral. El equipo aisló el acceso y conserva el registro para la investigación.</p>
+                <p id="det-descripcion">—</p>
                 <a class="button button-primary" href="index.html#listado-incidentes">Volver al listado</a>
             </section>
 
@@ -58,5 +61,6 @@
         <p><strong>SecureGuard</strong> · Proyecto académico de Desarrollo de plataformas</p>
         <p>© 2026 Alejandro Carriel</p>
     </footer>
+<script type="module" src="js/detalle.js"></script>
 </body>
 </html>

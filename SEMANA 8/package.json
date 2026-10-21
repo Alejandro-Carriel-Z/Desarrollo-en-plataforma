@@ -8,7 +8,7 @@
   "description": "SecureGuard: plataforma de incidentes desplegable (Unidad 8) con CRUD persistente, JWT, roles, validación, HTTPS, configuración por entorno, logs y health check",
   "scripts": {
     "start": "node server.js",
-    "start:prod": "prisma migrate deploy --config prisma7.config.ts && node server.js",
+    "start:prod": "prisma migrate deploy --config prisma7.config.ts && node src/seed.js && node server.js",
     "cert": "node crear-cert.js",
     "migrate": "prisma migrate dev --config prisma7.config.ts",
     "migrate:deploy": "prisma migrate deploy --config prisma7.config.ts",
@@ -22,7 +22,6 @@
     "smoke": "node scripts/smoke.js"
   },
   "dependencies": {
-    "@prisma/adapter-mariadb": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.2",
@@ -31,7 +30,10 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.3",
     "selfsigned": "^5.5.0",
-    "prisma": "^7.10.0"
+    "prisma": "^7.10.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "pg": "^8.16.3",
+    "express-rate-limit": "^8.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

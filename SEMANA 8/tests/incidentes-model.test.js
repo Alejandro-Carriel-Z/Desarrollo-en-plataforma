@@ -76,3 +76,35 @@ describe("modelo de incidentes", () => {
         expect(prisma.incidente.findFirst).not.toHaveBeenCalled();
     });
 });
+
+describe("borrado lógico y auditoría", () => {
+    const fila = { id: 7, codigo: "INC-007", titulo: "t", descripcion: "d", severidad: "alta", prioridad: "alta", estado: "Resuelto", tipo: "phishing", fecha: "2026-10-01", reportante: "r" };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        prisma.incidente.update = jest.fn();
+        prisma.incidente.delete = jest.fn();
+    });
+
+    test("eliminar no borra: actualiza a Cerrado con el usuario", async () => {
+        prisma.incidente.findFirst.mockResolvedValue(fila);
+        prisma.incidente.update.mockResolvedValue({ ...fila, estado: "Cerrado", actualizadoPor: "admin@x.com" });
+        const r = await modelo.eliminar("INC-007", "admin@x.com");
+        expect(prisma.incidente.delete).not.toHaveBeenCalled();
+        expect(prisma.incidente.update).toHaveBeenCalledWith({ where: { id: 7 }, data: { estado: "Cerrado", actualizadoPor: "admin@x.com" } });
+        expect(r.estado).toBe("Cerrado");
+    });
+
+    test("cerrar uno ya cerrado no lo modifica", async () => {
+        prisma.incidente.findFirst.mockResolvedValue({ ...fila, estado: "Cerrado" });
+        await expect(modelo.eliminar("INC-007", "admin@x.com")).resolves.toEqual({ yaCerrado: true });
+        expect(prisma.incidente.update).not.toHaveBeenCalled();
+    });
+
+    test("actualizar registra actualizadoPor", async () => {
+        prisma.incidente.findFirst.mockResolvedValue(fila);
+        prisma.incidente.update.mockResolvedValue(fila);
+        await modelo.actualizar("INC-007", { estado: "Resuelto", id: 99 }, "sup@x.com");
+        expect(prisma.incidente.update).toHaveBeenCalledWith({ where: { id: 7 }, data: { estado: "Resuelto", actualizadoPor: "sup@x.com" } });
+    });
+});

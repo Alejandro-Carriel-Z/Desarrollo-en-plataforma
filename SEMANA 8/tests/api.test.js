@@ -127,10 +127,42 @@ describe("CRUD", () => {
         const r = await request(app).patch("/api/incidentes/INC-1").set("Authorization", bearer(2)).send({ estado: "Resuelto" });
         expect(r.status).toBe(200);
     });
-    test("admin elimina → 200", async () => {
-        modelo.eliminar.mockResolvedValue({ id: "INC-1" });
+    test("admin cierra (DELETE lógico) → 200 con estado Cerrado y auditoría", async () => {
+        modelo.eliminar.mockResolvedValue({ id: "INC-1", estado: "Cerrado", actualizadoPor: "admin@secureguard.edu" });
         const r = await request(app).delete("/api/incidentes/INC-1").set("Authorization", bearer(3));
         expect(r.status).toBe(200);
+        expect(r.body.datos.estado).toBe("Cerrado");
+        expect(modelo.eliminar).toHaveBeenCalledWith("INC-1", "admin@secureguard.edu");
+    });
+    test("cerrar un incidente ya cerrado → 409", async () => {
+        modelo.eliminar.mockResolvedValue({ yaCerrado: true });
+        const r = await request(app).delete("/api/incidentes/INC-1").set("Authorization", bearer(3));
+        expect(r.status).toBe(409);
+    });
+    test("supervisor no puede pasar a Cerrado por PATCH → 400", async () => {
+        const r = await request(app).patch("/api/incidentes/INC-1").set("Authorization", bearer(2)).send({ estado: "Cerrado" });
+        expect(r.status).toBe(400);
+        expect(modelo.actualizar).not.toHaveBeenCalled();
+    });
+    const reemplazo = { ...incidente, prioridad: "media", estado: "Resuelto" };
+    test("admin reemplaza con PUT → 200 y registra quién lo hizo", async () => {
+        modelo.actualizar.mockResolvedValue({ id: "INC-1", ...reemplazo });
+        const r = await request(app).put("/api/incidentes/INC-1").set("Authorization", bearer(3)).send(reemplazo);
+        expect(r.status).toBe(200);
+        expect(modelo.actualizar).toHaveBeenCalledWith("INC-1", expect.objectContaining({ estado: "Resuelto" }), "admin@secureguard.edu");
+    });
+    test("supervisor no puede usar PUT → 403", async () => {
+        const r = await request(app).put("/api/incidentes/INC-1").set("Authorization", bearer(2)).send(reemplazo);
+        expect(r.status).toBe(403);
+    });
+    test("PUT incompleto → 400", async () => {
+        const r = await request(app).put("/api/incidentes/INC-1").set("Authorization", bearer(3)).send({ titulo: "Solo título" });
+        expect(r.status).toBe(400);
+    });
+    test("PUT a un inexistente → 404", async () => {
+        modelo.actualizar.mockResolvedValue(null);
+        const r = await request(app).put("/api/incidentes/NO-EXISTE").set("Authorization", bearer(3)).send(reemplazo);
+        expect(r.status).toBe(404);
     });
 });
 

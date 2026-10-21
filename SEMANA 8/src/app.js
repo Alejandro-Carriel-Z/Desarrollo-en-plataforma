@@ -2,9 +2,11 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const compression = require("compression");
+const rateLimit = require("express-rate-limit");
 
 const { config } = require("./config/env");
 const logger = require("./middleware/logger");
+const { log } = logger;
 const { noEncontrado, errorHandler } = require("./middleware/errorHandler");
 const { exigirToken } = require("./security/rol");
 const incidentesRoutes = require("./routes/incidentes.routes");
@@ -16,13 +18,11 @@ app.disable("x-powered-by");
 // Detrás del proxy del hosting (Railway/Render) se confía en X-Forwarded-*.
 if (config.TRUST_PROXY) app.set("trust proxy", 1);
 
-const origenesPermitidos = [
-    "https://localhost:3000",
-    "https://127.0.0.1:3000",
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-    ...config.CORS_ORIGINS
-];
+// En producción solo se aceptan los orígenes configurados en CORS_ORIGINS
+// (el propio front se sirve desde el mismo origen y no necesita CORS).
+const origenesPermitidos = config.PRODUCCION
+    ? config.CORS_ORIGINS
+    : ["https://localhost:3000", "https://127.0.0.1:3000", "http://127.0.0.1:5500", "http://localhost:5500", ...config.CORS_ORIGINS];
 
 // Cabeceras de seguridad básicas
 app.use((req, res, next) => {
@@ -88,6 +88,24 @@ app.get("/api/listo", async (_req, res) => {
     res.status(base === "conectada" ? 200 : 503).json({ ok: base === "conectada", servicio: "SecureGuard API", base });
 });
 
+// Rate limiting del login: máx. LOGIN_MAX_INTENTOS fallidos por IP cada LOGIN_VENTANA_MIN minutos.
+// Los logins correctos no cuentan. Detrás del proxy la IP sale de X-Forwarded-For (trust proxy).
+const limiteLogin = rateLimit({
+    windowMs: config.LOGIN_VENTANA_MIN * 60 * 1000,
+    limit: config.LOGIN_MAX_INTENTOS,
+    skipSuccessfulRequests: true,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+    handler: (req, res) => {
+        log.warn("login bloqueado por rate limit", { requestId: req.id, ip: req.ip });
+        res.status(429).json({
+            ok: false,
+            mensaje: `Demasiados intentos de inicio de sesión. Intenta de nuevo en ${config.LOGIN_VENTANA_MIN} minutos.`,
+            requestId: req.id
+        });
+    }
+});
+app.use("/api/auth/login", limiteLogin);
 app.use("/api/auth", authRoutes);
 app.use("/api/incidentes", exigirToken, incidentesRoutes);
 app.use(noEncontrado);

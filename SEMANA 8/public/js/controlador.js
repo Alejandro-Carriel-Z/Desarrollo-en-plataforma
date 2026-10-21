@@ -1,6 +1,7 @@
 import {
     entrar, guardarSesion, cerrarSesion, sesion,
-    obtenerIncidentes, filtrarPorSeveridad, crearIncidente, cambiarEstado, eliminarIncidente
+    obtenerIncidentes, filtrarPorSeveridad, crearIncidente, cambiarEstado, eliminarIncidente,
+    obtenerIncidente, reemplazarIncidente
 } from "./modelo.js";
 import { pintarIncidentes, pintarResumen, pintarEstado } from "./vista.js";
 
@@ -31,7 +32,7 @@ async function iniciar() {
     try {
         incidentes = await obtenerIncidentes();
         mostrar(incidentes);
-        anunciar(`${incidentes.length} incidentes cargados desde MySQL`);
+        anunciar(`${incidentes.length} incidentes cargados desde PostgreSQL`);
     } catch (error) {
         anunciar(error.message);
     }
@@ -52,7 +53,8 @@ document.querySelector("#formulario-login").addEventListener("submit", async (ev
 document.querySelector("#cerrar-sesion").addEventListener("click", () => {
     cerrarSesion();
     incidentes = [];
-    lista.innerHTML = "";
+    lista.replaceChildren();
+    cerrarEdicion();
     iniciar();
 });
 
@@ -100,23 +102,77 @@ formulario.addEventListener("submit", async (evento) => {
         await crearIncidente(datos);
         incidentes = await obtenerIncidentes();
         mostrar(incidentes);
-        anunciar(`Incidente guardado en MySQL: ${datos.titulo}`);
+        anunciar(`Incidente guardado en PostgreSQL: ${datos.titulo}`);
         formulario.reset();
     } catch (error) {
         anunciar(error.message);
     }
 });
 
-lista.addEventListener("click", async (evento) => {
-    const borrar = evento.target.dataset.borrar;
-    const estado = evento.target.dataset.estado;
+const seccionEdicion = document.querySelector("#edicion-incidente");
+const formularioEdicion = document.querySelector("#formulario-edicion");
+let editando = null;
+
+function fijarValor(id, valor) {
+    const campo = document.querySelector(`#${id}`);
+    if (campo.tagName === "SELECT" && ![...campo.options].some((o) => o.value === valor)) {
+        const opcion = document.createElement("option");
+        opcion.value = valor;
+        opcion.textContent = valor;
+        campo.append(opcion);
+    }
+    campo.value = valor;
+}
+
+async function abrirEdicion(id) {
+    const incidente = await obtenerIncidente(id);
+    editando = incidente.id;
+    document.querySelector("#edit-codigo").textContent = incidente.id;
+    for (const campo of ["titulo", "descripcion", "severidad", "prioridad", "estado", "tipo", "fecha"]) {
+        fijarValor(`edit-${campo}`, incidente[campo]);
+    }
+    seccionEdicion.hidden = false;
+    seccionEdicion.scrollIntoView({ behavior: "smooth" });
+}
+
+function cerrarEdicion() {
+    editando = null;
+    formularioEdicion.reset();
+    seccionEdicion.hidden = true;
+}
+
+document.querySelector("#cancelar-edicion").addEventListener("click", cerrarEdicion);
+
+formularioEdicion.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (!editando || !formularioEdicion.reportValidity()) return;
     try {
-        if (borrar) await eliminarIncidente(borrar);
-        if (estado) await cambiarEstado(estado, "Contención en curso");
+        await reemplazarIncidente(editando, Object.fromEntries(new FormData(formularioEdicion)));
+        anunciar(`Incidente ${editando} actualizado`);
+        cerrarEdicion();
+        incidentes = await obtenerIncidentes();
+        mostrar(incidentes);
+    } catch (error) {
+        anunciar(error.message);
+    }
+});
+
+lista.addEventListener("click", async (evento) => {
+    const { borrar, estado, editar } = evento.target.dataset;
+    try {
+        if (editar) return await abrirEdicion(editar);
+        if (borrar) {
+            if (!window.confirm(`¿Cerrar el incidente ${borrar}? Quedará como "Cerrado" (no se borra).`)) return;
+            await eliminarIncidente(borrar);
+        }
+        if (estado) {
+            const selector = lista.querySelector(`select[data-selector-estado="${CSS.escape(estado)}"]`);
+            await cambiarEstado(estado, selector.value);
+        }
         if (borrar || estado) {
             incidentes = await obtenerIncidentes();
             mostrar(incidentes);
-            anunciar(borrar ? "Incidente eliminado" : "Estado actualizado");
+            anunciar(borrar ? `Incidente ${borrar} cerrado` : "Estado actualizado");
         }
     } catch (error) {
         anunciar(error.message);

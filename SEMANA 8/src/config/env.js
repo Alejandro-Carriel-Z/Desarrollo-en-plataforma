@@ -28,6 +28,9 @@ const config = {
     HTTPS_ENABLED: booleano(process.env.HTTPS_ENABLED, !PRODUCCION),
     TRUST_PROXY: booleano(process.env.TRUST_PROXY, PRODUCCION),
     CORS_ORIGINS: (process.env.CORS_ORIGINS || "").split(",").map((o) => o.trim()).filter(Boolean),
+    // Límite de intentos fallidos de login por IP
+    LOGIN_MAX_INTENTOS: Number(process.env.LOGIN_MAX_INTENTOS) || 5,
+    LOGIN_VENTANA_MIN: Number(process.env.LOGIN_VENTANA_MIN) || 15,
     LOG_LEVEL: process.env.LOG_LEVEL || (PRODUCCION ? "info" : "debug"),
     LOG_FILE: process.env.LOG_FILE || "",
     APP_VERSION: process.env.APP_VERSION || require("../../package.json").version,

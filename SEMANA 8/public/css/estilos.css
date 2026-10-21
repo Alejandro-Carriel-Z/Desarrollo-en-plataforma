@@ -419,3 +419,27 @@ footer p {
     color: #9b2c2c;
     min-height: 1rem;
 }
+/* Unidad 8: acciones por tarjeta y casos cerrados */
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+.card-actions select {
+    width: auto;
+    flex: 1 1 10rem;
+}
+.button-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+.button:disabled,
+.card-actions select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.incident-card.cerrado {
+    opacity: 0.7;
+    filter: grayscale(0.6);
+}
