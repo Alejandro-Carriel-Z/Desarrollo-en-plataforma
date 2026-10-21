@@ -31,7 +31,7 @@ La plataforma se publica en **Render**: un Web Service de Node para la API y la 
    | Variable | Valor |
    |---|---|
    | `JWT_SECRET` | el hex de 64 caracteres |
-   | `CORS_ORIGINS` | `https://secureguard.onrender.com`. Ajústalo si Render asigna otro nombre y vuelve a desplegar |
+   | `CORS_ORIGINS` | `https://secureguard-bb1a.onrender.com` |
    | `SEED_ANALISTA_PASSWORD`, `SEED_SUPERVISOR_PASSWORD`, `SEED_ADMIN_PASSWORD` | tus claves demo |
    El Blueprint ya fija `NODE_ENV=production`, `HTTPS_ENABLED=false`, `TRUST_PROXY=true`, `LOG_LEVEL=info` y `NODE_VERSION=22`. `PORT` lo inyecta Render.
 5. Pulsa **Apply**. Render crea la base, construye (`npm ci`, que ejecuta `prisma generate`) y arranca. El arranque hace, en orden:
@@ -65,7 +65,7 @@ La plataforma se publica en **Render**: un Web Service de Node para la API y la 
 
 ## 4. Verificar producción
 ```powershell
-$env:BASE_URL="https://secureguard.onrender.com"; npm run smoke
+$env:BASE_URL="https://secureguard-bb1a.onrender.com"; npm run smoke
 # opcional, con una cuenta demo:
 $env:SMOKE_CORREO="analista@secureguard.edu"; $env:SMOKE_PASSWORD="<clave demo>"; npm run smoke
 ```

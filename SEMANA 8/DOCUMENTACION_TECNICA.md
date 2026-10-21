@@ -7,7 +7,7 @@
 | Versión | **8.0.0** (etiqueta sugerida `v8.0.0`) |
 | Fecha | 20 de octubre de 2026 (tercera revisión: PostgreSQL + Render) |
 | Repositorio | https://github.com/Alejandro-Carriel-Z/Desarrollo-en-plataforma, carpeta `SEMANA 8/` |
-| URL de producción | `https://secureguard.onrender.com` (se confirma al desplegar) |
+| URL de producción | `https://secureguard-bb1a.onrender.com` |
 | Stack | Node.js ≥ 20 (imagen Node 22), Express 4, Prisma 7 + `@prisma/adapter-pg` + `pg`, PostgreSQL 16, express-rate-limit, jsonwebtoken, bcryptjs, selfsigned, compression, cors, dotenv, Jest 30, supertest, ESLint 10 |
 
 ## Índice
@@ -312,7 +312,7 @@ Formato (una línea JSON por evento):
 | `JWT_SECRET` | sí | `<64 hex>` | Firma de tokens |
 | `HTTPS_ENABLED` | no | `true` local / `false` prod | HTTPS propio |
 | `TRUST_PROXY` | no | `true` en prod | Proxy y redirección |
-| `CORS_ORIGINS` | en producción | `https://secureguard.onrender.com` | Únicos orígenes CORS en producción |
+| `CORS_ORIGINS` | en producción | `https://secureguard-bb1a.onrender.com` | Únicos orígenes CORS en producción |
 | `LOGIN_MAX_INTENTOS` / `LOGIN_VENTANA_MIN` | no | `5` / `15` | Rate limiting del login |
 | `LOG_LEVEL` | no | `info` | Nivel mínimo |
 | `LOG_FILE` | no | `logs/app.log` | Archivo de log |

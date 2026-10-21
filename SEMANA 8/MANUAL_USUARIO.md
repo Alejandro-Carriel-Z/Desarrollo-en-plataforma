@@ -2,7 +2,7 @@
 
 | Versión | Fecha | URL |
 |---|---|---|
-| 8.0.0 (rev. 3) | 20/10/2026 | `https://secureguard.onrender.com` (en local: `https://localhost:3000`) |
+| 8.0.0 (rev. 3) | 20/10/2026 | `https://secureguard-bb1a.onrender.com` (en local: `https://localhost:3000`) |
 
 ## Contenido
 1. Qué es SecureGuard · 2. Requisitos · 3. Acceso e inicio de sesión · 4. Roles y permisos · 5. La pantalla principal · 6. Registrar un incidente · 7. Buscar y filtrar · 8. Ver el detalle · 9. Cambiar el estado · 10. Editar un incidente · 11. Cerrar un incidente · 12. Estados y severidades · 13. Cerrar sesión y vencimiento · 14. Mensajes de error · 15. Solución de problemas · 16. Preguntas frecuentes · 17. Buenas prácticas
