@@ -371,10 +371,20 @@ Formato (una línea JSON por evento):
   - Secretos con `sync: false`: `JWT_SECRET`, `CORS_ORIGINS` y las `SEED_*`.
   - `DATABASE_URL` sale de la base `secureguard-db` (Postgres 16, plan free) con `fromDatabase.connectionString`.
 - **Arranque:** `prisma migrate deploy` → `node src/seed.js` (idempotente; se omite si faltan claves) → `node server.js`. El plan free no tiene Shell, pre-deploy ni one-off jobs.
-- **Límites free:** el servicio se duerme a los 15 minutos (despertar tarda cerca de 1 minuto) y Postgres free **expira a los 30 días**, con 14 días de gracia. Pasos completos en `DESPLIEGUE.md`.
+- **Límites free:** el servicio se duerme a los 15 minutos (despertar tarda cerca de 1 minuto) y Postgres free **expira a los 30 días**, con 14 días de gracia.
 - **Contenedor alternativo:** `Dockerfile` (node:22-slim, `USER node`, `npm ci --omit=dev`, `CMD npm run start:prod`) y `docker-compose.yml` (app + postgres:16). Sirve para Render con runtime docker o para otro hosting.
 - **Trazabilidad:** commit en `main`, el `commit` de `/api/salud` (`RENDER_GIT_COMMIT`) y la etiqueta `v8.0.0`.
 - **Reversión:** Rollback en el panel (el free permite los 2 despliegues anteriores) o `git revert` + push (auto-deploy). Respaldo con `pg_dump` antes de cambios de esquema; las migraciones son aditivas.
+
+### 16.1 Pasos para publicar en Render
+1. Genera un `JWT_SECRET` de 64 caracteres hex en tu PC: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+2. En Render: **New → Blueprint**, elige el repositorio y la rama `main`. Render lee `render.yaml` y crea `secureguard` (web) y `secureguard-db` (Postgres 16 free).
+3. Completa las variables `sync: false`: `JWT_SECRET` y las claves `SEED_ANALISTA_PASSWORD`, `SEED_SUPERVISOR_PASSWORD` y `SEED_ADMIN_PASSWORD`. `CORS_ORIGINS` ya está fijado a `https://secureguard-bb1a.onrender.com`.
+4. Pulsa **Apply**. Al arrancar se aplican las migraciones, se crean o actualizan las cuentas demo y se inicia el servidor. En **Logs** debe verse `servidor iniciado` con `entorno: production`.
+5. Verifica con `$env:BASE_URL="https://secureguard-bb1a.onrender.com"; npm run smoke` y que `/api/salud` muestre el commit desplegado.
+6. Etiqueta la versión: `git tag -a v8.0.0 -m "Entrega final Unidad 8"; git push origin v8.0.0`.
+7. Alternativa manual: **New → Postgres** (free) y **New → Web Service** con Root Directory `SEMANA 8`, build `npm ci`, start `npm run start:prod`, health check `/api/salud` y las mismas variables (`DATABASE_URL` = Internal Database URL).
+8. Después de la evaluación, rota `JWT_SECRET` y las claves demo. Recuerda que la base free expira a los 30 días.
 
 ## 17. Checklist de producción
 - [ ] `npm run verificar` en verde sobre el commit que se despliega

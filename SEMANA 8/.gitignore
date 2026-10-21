@@ -20,3 +20,12 @@ logs/
 *.log
 *.zip
 coverage/
+
+# Documentos de trabajo locales (no se publican)
+/CHECKLIST_EVIDENCIAS.md
+/DESPLIEGUE.md
+/GUIA_FINAL_SECUREGUARD.md
+/GUION_VIDEO_DEFENSA.md
+/MODIFICACIONES_HECHAS_POR_GROK.md
+/PRESENTACION.md
+/.github/modernize/assessment/engines/facts/architecture-diagram.md

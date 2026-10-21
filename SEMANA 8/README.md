@@ -13,19 +13,12 @@ Versión **8.0.0**. Plataforma de gestión de incidentes con CRUD persistente (P
 |---|---|
 | `DOCUMENTACION_TECNICA.md` | Arquitectura (mermaid), variables, API, seguridad, pruebas, despliegue, monitoreo y limitaciones |
 | `MANUAL_USUARIO.md` | Uso de la plataforma por rol y solución de problemas |
-| `DESPLIEGUE.md` | Pasos exactos para publicar en Render (Blueprint o manual), seed, verificar, etiquetar y revertir |
-| `PRESENTACION.md` | Contenido de las diapositivas |
-| `GUION_VIDEO_DEFENSA.md` | Guion de 10 min (funcionalidad, código y seguridad a fondo) y anexo de preguntas |
-| `CHECKLIST_EVIDENCIAS.md` | Capturas para el PDF de evidencias |
 | `RETROALIMENTACION_Y_LECCIONES.md` | Retroalimentación clasificada y lecciones (16.5) |
-| `MODIFICACIONES_HECHAS_POR_GROK.md` | Qué archivos se crearon o cambiaron y por qué |
-| `GUIA_FINAL_SECUREGUARD.md` | Guía de estudio detallada (de Semana 7) |
 
 ## Ejecución local
 ```powershell
 npm install
 copy .env.example .env    # completa DATABASE_URL, JWT_SECRET, etc.
-docker start postgres-secureguard   # o crea uno: ver DESPLIEGUE.md
 npm run cert; npm run migrate; npm run seed
 npm start                 # https://localhost:3000
 ```
@@ -38,3 +31,4 @@ Con contenedores: `docker compose up -d --build` (app + postgres:16; el seed cor
 
 ## Seguridad del repositorio
 `.env`, `certs/`, `*.pem`, `logs/`, `node_modules/` y los ZIP no se suben. Solo existe `.env.example`, con marcadores. En producción los secretos viven en el panel del hosting.
+

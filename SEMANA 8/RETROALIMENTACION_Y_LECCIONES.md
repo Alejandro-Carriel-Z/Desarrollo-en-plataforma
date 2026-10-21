@@ -1,7 +1,5 @@
 # Retroalimentación final y lecciones aprendidas (16.5)
 
-> Revisa y completa con tus palabras la retroalimentación concreta que te dio el docente.
-
 ## Retroalimentación recibida y clasificación
 | Observación | Tipo | Impacto | Urgencia | Esfuerzo | Acción |
 |---|---|---|---|---|---|
