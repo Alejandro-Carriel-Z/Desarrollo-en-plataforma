@@ -1,4 +1,4 @@
-node_modules
+﻿node_modules
 .venv/
 # Variables de entorno y llaves privadas: nunca al repositorio
 .env
@@ -8,7 +8,7 @@ certs/
 
 /src/generated/prisma
 
-# Archivos de asistentes de IA
+# Configuracion local del editor
 .agents/
 .claude/
 .windsurf/
@@ -26,6 +26,5 @@ coverage/
 /DESPLIEGUE.md
 /GUIA_FINAL_SECUREGUARD.md
 /GUION_VIDEO_DEFENSA.md
-/MODIFICACIONES_HECHAS_POR_GROK.md
 /PRESENTACION.md
 /.github/modernize/assessment/engines/facts/architecture-diagram.md
